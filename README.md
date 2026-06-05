@@ -1,4 +1,4 @@
-# 小哈 AI 机器人 (XiaoHa AI Robot)
+# RobotChat AI 机器人 (RobotChat AI )
 
 基于 Spring Boot + Vue 3 的全栈 AI 对话平台，集成阿里云百炼大模型、RAG 知识库检索、SearXNG 联网搜索，支持通用对话与智能客服两大场景。
 
