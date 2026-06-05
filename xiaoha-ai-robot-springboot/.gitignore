@@ -1,0 +1,21 @@
+# 密钥文件
+.env
+
+# 含有敏感信息的配置文件（API Key、数据库密码等）
+src/main/resources/application-dev.yml
+
+# Maven 构建产物
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# 日志
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

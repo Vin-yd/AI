@@ -1,0 +1,41 @@
+# SearXNG 最小配置文件
+# 参考: https://docs.searxng.org/admin/settings/
+
+use_default_settings: true
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  formats:
+    - html
+    - json
+
+server:
+  secret_key: "${SEARXNG_SECRET_KEY:-change-me-to-a-random-string}"
+  bind_address: "0.0.0.0"
+  limiter: false
+  image_proxy: false
+
+ui:
+  static_use_hash: true
+
+redis:
+  url: false
+
+engines:
+  # 国内可用搜索引擎（已移除 Google，无法访问）
+  - name: bing
+    engine: bing
+    disabled: false
+  - name: duckduckgo
+    engine: duckduckgo
+    disabled: false
+  - name: wikipedia
+    engine: wikipedia
+    disabled: false
+  - name: baidu
+    engine: baidu
+    disabled: false
+  - name: bing_news
+    engine: bing_news
+    disabled: true

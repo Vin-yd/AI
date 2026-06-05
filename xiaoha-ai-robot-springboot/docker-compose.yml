@@ -1,0 +1,70 @@
+version: "3.8"
+
+# =============================================================================
+#  XiaoHa AI Robot — 生产环境服务编排
+#  使用方式:
+#    1. 创建 .env 文件，填入 DB_PASSWORD 和 DASHSCOPE_API_KEY
+#    2. docker-compose up -d
+# =============================================================================
+
+services:
+  # =========================================================================
+  #  PostgreSQL 17 + pgvector 向量扩展
+  # =========================================================================
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: postgres
+    environment:
+      POSTGRES_DB: robot
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?请设置 DB_PASSWORD 环境变量}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =========================================================================
+  #  SearXNG 搜索引擎
+  # =========================================================================
+  searxng:
+    image: searxng/searxng:latest
+    container_name: searxng
+    ports:
+      - "8888:8080"
+    volumes:
+      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
+    environment:
+      SEARXNG_SECRET_KEY: ${SEARXNG_SECRET_KEY:-$(openssl rand -hex 32)}
+    restart: unless-stopped
+
+  # =========================================================================
+  #  XiaoHa AI Robot — Spring Boot 应用
+  # =========================================================================
+  app:
+    build: .
+    container_name: xiaoha-robot
+    ports:
+      - "8080:8080"
+    environment:
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:?请设置 DB_PASSWORD 环境变量}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:?请设置 DASHSCOPE_API_KEY 环境变量}
+      SEARXNG_SECRET_KEY: ${SEARXNG_SECRET_KEY:-change-me}
+    volumes:
+      - app-data:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      searxng:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  app-data:
