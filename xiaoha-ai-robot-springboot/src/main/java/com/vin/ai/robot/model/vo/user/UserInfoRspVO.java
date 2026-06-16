@@ -15,4 +15,5 @@ public class UserInfoRspVO {
     private String phone;
     private String nickname;
     private String role;
+    private String createTime;
 }

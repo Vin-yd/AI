@@ -9,82 +9,77 @@
   >
     <div class="flex flex-col items-center pt-4">
       <!-- 头像 -->
-      <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold mb-4 shadow-lg">
+      <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold mb-3 shadow-lg">
         {{ avatarChar }}
       </div>
 
       <!-- 角色标签 -->
-      <a-tag :color="userStore.isAdmin ? 'purple' : 'blue'" class="mb-4">
+      <a-tag :color="userStore.isAdmin ? 'purple' : 'blue'" class="mb-6">
         {{ userStore.isAdmin ? '管理员' : '普通用户' }}
       </a-tag>
 
-      <!-- 信息表格 -->
-      <a-descriptions :column="1" bordered size="middle" class="w-full mb-6">
-        <a-descriptions-item label="用户 ID">
-          {{ userStore.userInfo?.id }}
-        </a-descriptions-item>
-        <a-descriptions-item label="手机号">
-          {{ userStore.userInfo?.phone }}
-        </a-descriptions-item>
-        <a-descriptions-item label="昵称">
+      <!-- 用户信息 -->
+      <div class="w-full space-y-4 px-2">
+        <!-- 昵称 -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <div class="text-xs text-gray-400 mb-2">昵称</div>
           <template v-if="editingNickname">
-            <a-input
-              v-model:value="nicknameValue"
-              size="small"
-              style="width: 120px"
-              @pressEnter="saveNickname"
-              @blur="saveNickname"
-              ref="nicknameInput"
-            />
+            <div class="flex items-center gap-2">
+              <a-input
+                v-model:value="nicknameValue"
+                size="middle"
+                style="flex: 1"
+                @pressEnter="saveNickname"
+                ref="nicknameInput"
+                :maxlength="50"
+              />
+              <a-button size="small" type="primary" @click="saveNickname">保存</a-button>
+            </div>
           </template>
           <template v-else>
-            <span class="cursor-pointer hover:text-blue-500 transition-colors" @click="startEditNickname">
-              {{ userStore.userInfo?.nickname || '未设置' }}
-              <span class="text-gray-300 text-xs ml-1">✎</span>
-            </span>
+            <div class="flex items-center justify-between">
+              <span class="text-base text-gray-800 font-medium">
+                {{ userStore.userInfo?.nickname || '未设置' }}
+              </span>
+              <span class="text-blue-500 text-sm cursor-pointer hover:text-blue-600 transition-colors" @click="startEditNickname">
+                编辑
+              </span>
+            </div>
           </template>
-        </a-descriptions-item>
-        <a-descriptions-item label="注册时间">
-          {{ userStore.userInfo?.createTime || '-' }}
-        </a-descriptions-item>
-      </a-descriptions>
+        </div>
 
-      <!-- 退出登录 -->
-      <a-button
-        danger
-        type="primary"
-        block
-        size="large"
-        @click="handleLogout"
-      >
-        <template #icon>
-          <span style="font-size: 16px;">⏻</span>
-        </template>
-        退出登录
-      </a-button>
+        <!-- 手机号 -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <div class="text-xs text-gray-400 mb-2">手机号</div>
+          <div class="text-base text-gray-800 font-medium">{{ userStore.userInfo?.phone }}</div>
+        </div>
+
+        <!-- 注册时间 -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <div class="text-xs text-gray-400 mb-2">注册时间</div>
+          <div class="text-base text-gray-800 font-medium">{{ userStore.userInfo?.createTime || '-' }}</div>
+        </div>
+      </div>
     </div>
   </a-drawer>
 </template>
 
 <script setup>
 import { ref, computed, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { useUserStore } from '@/stores/userStore'
 
-const props = defineProps({
+defineProps({
   open: { type: Boolean, required: true },
 })
 const emit = defineEmits(['close'])
 
-const router = useRouter()
 const userStore = useUserStore()
 
 const avatarChar = computed(() =>
   (userStore.userInfo?.nickname || userStore.userInfo?.phone || 'U')[0].toUpperCase()
 )
 
-// 编辑昵称
 const editingNickname = ref(false)
 const nicknameValue = ref('')
 const nicknameInput = ref(null)
@@ -106,12 +101,5 @@ async function saveNickname() {
   } catch {
     message.error('更新失败')
   }
-}
-
-async function handleLogout() {
-  await userStore.logout()
-  emit('close')
-  message.success('已退出登录')
-  router.push({ name: 'LoginPage' })
 }
 </script>

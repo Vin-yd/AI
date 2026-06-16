@@ -23,5 +23,6 @@ public class LoginRspVO {
         private String phone;
         private String nickname;
         private String role;
+        private String createTime;
     }
 }

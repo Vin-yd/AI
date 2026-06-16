@@ -107,6 +107,7 @@ public class AuthServiceImpl implements AuthService {
                 .phone(maskedPhone)
                 .nickname(user.getNickname())
                 .role(user.getRole())
+                .createTime(user.getCreateTime() != null ? user.getCreateTime().toString() : null)
                 .build();
 
         return Response.success(LoginRspVO.builder()
