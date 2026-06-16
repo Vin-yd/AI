@@ -13,7 +13,7 @@
             <!-- Logo 与应用名称 -->
              <div class="flex items-center justify-center p-4 cursor-pointer" @click="jumpToIndexPage">
               <SvgIcon name="ai-robot-logo" customCss="w-8 h-8 text-gray-700 mr-3" />
-              <span class="text-2xl font-bold font-sans tracking-wide text-gray-800">Vin-AI机器人</span>
+              <span class="text-2xl font-bold font-sans tracking-wide text-gray-800">RobotChat</span>
             </div>
 
              <!-- 用户区域 -->

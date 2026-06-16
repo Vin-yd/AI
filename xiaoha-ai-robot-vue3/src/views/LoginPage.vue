@@ -26,7 +26,7 @@
 
       <div class="card-header">
         <div class="logo-ring" @click="onLogoClick">⚡</div>
-        <h1>Vin-AI Robot</h1>
+        <h1>RobotChat</h1>
         <p>开启智能对话之旅</p>
         <div class="status-bar">
           <span class="status-dot"></span>

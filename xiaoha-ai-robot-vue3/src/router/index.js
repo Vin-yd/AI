@@ -6,25 +6,25 @@ const routes = [
         path: '/login',
         name: 'LoginPage',
         component: () => import('@/views/LoginPage.vue'),
-        meta: { title: '登录 - Vin-AI 机器人' }
+        meta: { title: '登录 - RobotChat' }
     },
     {
         path: '/',
         name: 'Index',
         component: () => import('@/views/Index.vue'),
-        meta: { title: '小哈 AI 机器人首页', requiresAuth: true }
+        meta: { title: 'RobotChat', requiresAuth: true }
     },
     {
         path: '/chat/:chatId',
         name: 'ChatPage',
         component: () => import('@/views/ChatPage.vue'),
-        meta: { title: '对话聊天页', requiresAuth: true }
+        meta: { title: 'RobotChat - 对话', requiresAuth: true }
     },
     {
         path: '/customer-service/chat',
         name: 'CustomerServiceChatPage',
         component: () => import('@/views/CustomerServiceChatPage.vue'),
-        meta: { title: '智能客服聊天页', requiresAuth: true }
+        meta: { title: 'RobotChat - 智能客服', requiresAuth: true }
     }
 ]
 

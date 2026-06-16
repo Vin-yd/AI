@@ -67,6 +67,6 @@ aliyun:
   sms:
     access-key-id: ${ALIYUN_SMS_ACCESS_KEY_ID:}
     access-key-secret: ${ALIYUN_SMS_ACCESS_KEY_SECRET:}
-    sign-name: 小哈AI机器人
-    template-code: ${ALIYUN_SMS_TEMPLATE_CODE:SMS_123456789}
+    sign-name: 速通互联验证码
+    template-code: ${ALIYUN_SMS_TEMPLATE_CODE:}
     endpoint: dysmsapi.aliyuncs.com
