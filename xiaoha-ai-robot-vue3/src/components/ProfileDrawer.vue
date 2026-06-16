@@ -60,12 +60,26 @@
           <div class="text-base text-gray-800 font-medium">{{ userStore.userInfo?.createTime || '-' }}</div>
         </div>
       </div>
+
+      <!-- 退出登录 -->
+      <div class="w-full px-2 mt-8">
+        <a-button
+          danger
+          type="primary"
+          block
+          size="large"
+          @click="handleLogout"
+        >
+          退出登录
+        </a-button>
+      </div>
     </div>
   </a-drawer>
 </template>
 
 <script setup>
 import { ref, computed, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { useUserStore } from '@/stores/userStore'
 
@@ -74,6 +88,7 @@ defineProps({
 })
 const emit = defineEmits(['close'])
 
+const router = useRouter()
 const userStore = useUserStore()
 
 const avatarChar = computed(() =>
@@ -101,5 +116,12 @@ async function saveNickname() {
   } catch {
     message.error('更新失败')
   }
+}
+
+async function handleLogout() {
+  await userStore.logout()
+  emit('close')
+  message.success('已退出登录')
+  router.push({ name: 'LoginPage' })
 }
 </script>

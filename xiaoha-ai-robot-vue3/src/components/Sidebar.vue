@@ -99,13 +99,6 @@
             </div>
             </div>
 
-            <!-- 退出登录按钮 -->
-            <div v-if="userStore.isLoggedIn" class="px-3 pb-3">
-              <button @click="handleLogout"
-                class="w-full flex items-center justify-center gap-2 py-2.5 text-red-500 hover:text-white hover:bg-red-500 rounded-xl cursor-pointer transition-all duration-300 border border-red-200 hover:border-red-500 text-sm font-medium">
-                退出登录
-              </button>
-            </div>
         </div>
     </div>
 
@@ -294,13 +287,6 @@ const jumpToLogin = () => router.push({ name: 'LoginPage' })
 
 // 个人中心抽屉
 const profileDrawerOpen = ref(false)
-
-// 退出登录
-async function handleLogout() {
-  await userStore.logout()
-  message.success('已退出登录')
-  router.push({ name: 'LoginPage' })
-}
 
 // 获取完整用户信息（含注册时间）
 onMounted(async () => {
