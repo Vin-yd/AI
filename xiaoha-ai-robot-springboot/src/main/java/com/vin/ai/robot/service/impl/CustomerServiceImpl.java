@@ -169,10 +169,13 @@ public class CustomerServiceImpl implements CustomerService {
         // 删除分片文件所在的目录和记录
         String fileMd5 = aiCustomerServiceFileStorageDO.getFileMd5();
         String chunkDir = chunkPath + File.separator + fileMd5;
-        try {
-            FileUtils.forceDelete(new File(chunkDir));
-        } catch (IOException e) {
-            log.error("## 删除分片文件失败: ", e);
+        File chunkDirFile = new File(chunkDir);
+        if (chunkDirFile.exists()) {
+            try {
+                FileUtils.forceDelete(chunkDirFile);
+            } catch (IOException e) {
+                log.error("## 删除分片文件失败: ", e);
+            }
         }
 
         fileChunkInfoMapper.deleteByMd5(fileMd5);
@@ -284,18 +287,19 @@ public class CustomerServiceImpl implements CustomerService {
             if (StringUtils.isNotBlank(fileName)) {
                 AiCustomerServiceFileStorageDO sameNameFile = aiCustomerServiceMdStorageMapper
                         .selectByFileName(fileName);
-                AiCustomerServiceFileStatusEnum statusEnum = AiCustomerServiceFileStatusEnum
-                        .codeOf(sameNameFile.getStatus());
-                // 只有已完成或失败的文件才允许覆盖（待处理/向量化中的不可删除）
-                if (sameNameFile != null
-                        && (Objects.equals(statusEnum, AiCustomerServiceFileStatusEnum.COMPLETED)
-                            || Objects.equals(statusEnum, AiCustomerServiceFileStatusEnum.FAILED))) {
+                if (sameNameFile != null) {
+                    AiCustomerServiceFileStatusEnum statusEnum = AiCustomerServiceFileStatusEnum
+                            .codeOf(sameNameFile.getStatus());
+                    // 只有已完成或失败的文件才允许覆盖（待处理/向量化中的不可删除）
+                    if (Objects.equals(statusEnum, AiCustomerServiceFileStatusEnum.COMPLETED)
+                            || Objects.equals(statusEnum, AiCustomerServiceFileStatusEnum.FAILED)) {
                     return Response.success(CheckFileRspVO.builder()
                             .exists(false)
                             .needUpload(true)
                             .hasSameName(true)
                             .sameNameFileId(sameNameFile.getId())
                             .build());
+                    }
                 }
             }
             return Response.success(CheckFileRspVO.builder()
