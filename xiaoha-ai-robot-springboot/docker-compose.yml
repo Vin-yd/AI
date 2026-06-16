@@ -1,10 +1,12 @@
 version: "3.8"
 
 # =============================================================================
-#  XiaoHa AI Robot — 生产环境服务编排
-#  使用方式:
-#    1. 创建 .env 文件，填入 DB_PASSWORD 和 DASHSCOPE_API_KEY
-#    2. docker-compose up -d
+#  XiaoHa AI Robot — 依赖服务（PostgreSQL + SearXNG）
+#  后端直接跑在宿主机上，Docker 只管理这两个中间件
+# =============================================================================
+#  启动:  docker compose up -d
+#  停止:  docker compose down
+#  状态:  docker compose ps
 # =============================================================================
 
 services:
@@ -43,28 +45,5 @@ services:
       SEARXNG_SECRET_KEY: ${SEARXNG_SECRET_KEY:-$(openssl rand -hex 32)}
     restart: unless-stopped
 
-  # =========================================================================
-  #  XiaoHa AI Robot — Spring Boot 应用
-  # =========================================================================
-  app:
-    build: .
-    container_name: xiaoha-robot
-    ports:
-      - "8080:8080"
-    environment:
-      DB_USERNAME: ${DB_USERNAME:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:?请设置 DB_PASSWORD 环境变量}
-      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:?请设置 DASHSCOPE_API_KEY 环境变量}
-      SEARXNG_SECRET_KEY: ${SEARXNG_SECRET_KEY:-change-me}
-    volumes:
-      - app-data:/data
-    depends_on:
-      postgres:
-        condition: service_healthy
-      searxng:
-        condition: service_started
-    restart: unless-stopped
-
 volumes:
   pgdata:
-  app-data:

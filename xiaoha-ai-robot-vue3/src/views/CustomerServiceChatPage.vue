@@ -297,7 +297,7 @@ const sendMessage = async () => {
     const controller = new AbortController()
     const signal = controller.signal
 
-    fetchEventSource('http://localhost:8080/customer-service/completion', {
+    fetchEventSource('/api/customer-service/completion', {
       method: 'POST',
       signal: signal,
       headers: {

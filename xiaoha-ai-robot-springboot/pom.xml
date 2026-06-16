@@ -199,6 +199,13 @@
             <version>1.39.0</version>
         </dependency>
 
+        <!-- 阿里云号码认证（短信验证码） -->
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>dypnsapi20170525</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -241,6 +248,12 @@
             <id>aliyunmaven</id>
             <name>aliyun</name>
             <url>https://maven.aliyun.com/repository/public</url>
+        </repository>
+        <!-- Maven Central（阿里云 Tea SDK 需要直连） -->
+        <repository>
+            <id>maven-central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
 

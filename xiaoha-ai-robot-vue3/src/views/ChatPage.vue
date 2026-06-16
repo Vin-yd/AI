@@ -182,7 +182,7 @@ const sendMessage = async (payload) => {
     const signal = controller.signal
 
 	// 调用 SSE 流式对话接口
-    fetchEventSource('http://localhost:8080/chat/completion', {
+    fetchEventSource('/api/chat/completion', {
       method: 'POST',
       signal: signal,
       headers: {
