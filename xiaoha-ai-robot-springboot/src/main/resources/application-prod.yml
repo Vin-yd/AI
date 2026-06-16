@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver                           # 生产环境直接使用 PostgreSQL 驱动
-    url: jdbc:postgresql://postgres:5432/robot                         # postgres 是 docker-compose 中的服务名
+    url: jdbc:postgresql://127.0.0.1:5432/robot                         # 后端与 PostgreSQL 容器同在一台机器
     username: ${DB_USERNAME:postgres}                                  # 通过环境变量注入
     password: ${DB_PASSWORD}                                           # 通过环境变量注入（必填）
     hikari:
@@ -10,8 +10,8 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
-      minimum-idle: 5
-      maximum-pool-size: 20
+      minimum-idle: 2
+      maximum-pool-size: 5
       connection-test-query: SELECT 1
       validation-timeout: 5000
   cassandra:
@@ -46,7 +46,7 @@ okhttp:
   keep-alive-duration: 5
 
 searxng:
-  url: http://searxng:8080/search                                      # searxng 是 docker-compose 中的服务名
+  url: http://127.0.0.1:8888/search                                      # 后端与 SearXNG 容器同在一台机器
   count: 10
 
 customer-service:
@@ -54,3 +54,19 @@ customer-service:
   chunk-path: /data/xiaoha-ai-robot/chunk
   model: deepseek-v3
   temperature: 0.0
+
+# Sa-Token 配置
+sa-token:
+  token-name: Authorization
+  timeout: 2592000
+  is-read-header: true
+  token-prefix: "Bearer"
+
+# 阿里云短信配置
+aliyun:
+  sms:
+    access-key-id: ${ALIYUN_SMS_ACCESS_KEY_ID:}
+    access-key-secret: ${ALIYUN_SMS_ACCESS_KEY_SECRET:}
+    sign-name: 小哈AI机器人
+    template-code: ${ALIYUN_SMS_TEMPLATE_CODE:SMS_123456789}
+    endpoint: dysmsapi.aliyuncs.com
