@@ -302,6 +302,7 @@ const sendMessage = async () => {
       signal: signal,
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (localStorage.getItem('token') || ''),
       },
       body: JSON.stringify(requestBody),
       onmessage(msg) {
