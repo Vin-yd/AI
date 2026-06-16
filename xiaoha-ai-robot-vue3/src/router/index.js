@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { useUserStore } from '@/stores/userStore'
 
 const routes = [
     {
@@ -32,17 +33,41 @@ const router = createRouter({
     routes,
 })
 
-// 全局前置守卫：未登录跳转登录页
-router.beforeEach((to, from, next) => {
+// 全局前置守卫
+router.beforeEach(async (to, from, next) => {
     const token = localStorage.getItem('token')
+
+    // 需要登录但无 token → 跳登录页
     if (to.meta.requiresAuth && !token) {
         next({ name: 'LoginPage' })
-    } else if (to.name === 'LoginPage' && token) {
-        // 已登录用户访问登录页，重定向到首页
-        next({ name: 'Index' })
-    } else {
-        next()
+        return
     }
+
+    // 已有 token 但用户信息为空 → 刷新页面后补全用户信息
+    if (token) {
+        const userStore = useUserStore()
+        if (!userStore.userInfo) {
+            try {
+                await userStore.fetchUserInfo()
+            } catch {
+                // token 过期，清掉
+                userStore.token = ''
+                localStorage.removeItem('token')
+                if (to.meta.requiresAuth) {
+                    next({ name: 'LoginPage' })
+                    return
+                }
+            }
+        }
+    }
+
+    // 已登录用户访问登录页 → 重定向到首页
+    if (to.name === 'LoginPage' && token) {
+        next({ name: 'Index' })
+        return
+    }
+
+    next()
 })
 
 // 动态设置页面标题
