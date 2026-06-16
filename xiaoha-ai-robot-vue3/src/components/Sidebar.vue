@@ -12,7 +12,8 @@
 
              <!-- 用户区域 -->
             <div v-if="userStore.isLoggedIn" class="px-3 mb-2">
-              <div class="flex items-center gap-2 px-2 py-2 bg-white rounded-xl border border-gray-100">
+              <div @click="profileDrawerOpen = true"
+                class="flex items-center gap-2 px-2 py-2 bg-white rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
                 <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                   {{ (userStore.userInfo?.nickname || userStore.userInfo?.phone || 'U')[0].toUpperCase() }}
                 </div>
@@ -20,15 +21,8 @@
                   <div class="text-sm font-medium text-gray-700 truncate">
                     {{ userStore.userInfo?.nickname || '用户' }}
                   </div>
-                  <div class="text-xs text-gray-400 truncate">
-                    {{ userStore.userInfo?.phone || '' }}
-                  </div>
                 </div>
-                <a-tooltip title="退出登录" placement="right">
-                  <button @click="handleLogout" class="p-1 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0">
-                    <span class="text-gray-400 text-sm">⏻</span>
-                  </button>
-                </a-tooltip>
+                <span class="text-gray-300 text-xs flex-shrink-0">▸</span>
               </div>
             </div>
             <div v-else class="px-3 mb-2">
@@ -146,11 +140,15 @@
                     </a-form-item>
                 </a-form>
   </a-modal>
+
+  <!-- 个人中心抽屉 -->
+  <ProfileDrawer :open="profileDrawerOpen" @close="profileDrawerOpen = false" />
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import SvgIcon from '@/components/SvgIcon.vue'
+import ProfileDrawer from '@/components/ProfileDrawer.vue'
 import { EditOutlined, EllipsisOutlined, DeleteOutlined } from '@ant-design/icons-vue'
 import { useRouter, useRoute } from 'vue-router'
 import { findHistoryChatPageList, deleteChat, renameChat } from '@/api/chat'
@@ -286,12 +284,8 @@ const jumpToChatPage = (chatId) => {
 const jumpToCustomerServiceChatPage = () => router.push({ name: 'CustomerServiceChatPage'})
 const jumpToLogin = () => router.push({ name: 'LoginPage' })
 
-// 退出登录
-const handleLogout = async () => {
-  await userStore.logout()
-  message.success('已退出登录')
-  router.push({ name: 'LoginPage' })
-}
+// 个人中心抽屉
+const profileDrawerOpen = ref(false)
 </script>
 
 <style scoped>

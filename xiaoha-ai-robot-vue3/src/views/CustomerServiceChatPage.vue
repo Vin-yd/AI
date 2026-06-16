@@ -16,15 +16,13 @@
           </div>
         </a-tooltip>
 
-         <!-- 右下角浮动设置按钮 -->
-      <div class="fixed top-4 right-4 z-10">
+         <!-- 管理员设置按钮 -->
+      <div v-if="userStore.isAdmin" class="fixed top-4 right-4 z-10">
         <a-tooltip placement="left">
-          <!-- Tooltip 提示文字 -->
           <template #title>
             <span>设置</span>
           </template>
-          <!-- 设置按钮 -->
-          <button class="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center cursor-pointer 
+          <button class="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center cursor-pointer
           shadow-xs hover:bg-gray-100 hover:shadow-xl transition-all duration-200" @click="showSettingsDrawer">
               <SvgIcon name="settings" customCss="w-5 h-5 text-gray-500"></SvgIcon>
           </button>
@@ -246,6 +244,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { fetchEventSource } from '@microsoft/fetch-event-source'
 import { UploadOutlined, SearchOutlined, RedoOutlined } from '@ant-design/icons-vue'
 import { findMarkdownFilePageList,uploadFileChunk,mergeFileChunk, checkFile, deleteMarkdownFile, updateMarkdownFile } from '@/api/customerService'
+import { useUserStore } from '@/stores/userStore'
 import { message } from 'ant-design-vue'
 import { filesize } from 'filesize'
 import SparkMD5 from 'spark-md5'
@@ -253,6 +252,7 @@ import SparkMD5 from 'spark-md5'
 console.log('首页传递过来的消息: ', history.state?.firstMessage)
 const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
 
 // 输入的消息
 const chatMessage = ref(history.state?.firstMessage || '')
