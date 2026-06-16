@@ -273,12 +273,31 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Response<CheckFileRspVO> checkFile(CheckFileReqVO checkFileReqVO) {
         String fileMd5 = checkFileReqVO.getFileMd5();
+        String fileName = checkFileReqVO.getFileName();
         // 查询对应 MD5 值的文件记录是否已经存在
         AiCustomerServiceFileStorageDO fileStorageDO = aiCustomerServiceMdStorageMapper
                 .selectByMd5(fileMd5);
 
-        // 文件记录不存在，需要上传
+        // 文件记录不存在，检查是否有同名文件
         if (Objects.isNull(fileStorageDO)) {
+            // 按文件名查同名已完成文件
+            if (StringUtils.isNotBlank(fileName)) {
+                AiCustomerServiceFileStorageDO sameNameFile = aiCustomerServiceMdStorageMapper
+                        .selectByFileName(fileName);
+                AiCustomerServiceFileStatusEnum statusEnum = AiCustomerServiceFileStatusEnum
+                        .codeOf(sameNameFile.getStatus());
+                // 只有已完成或失败的文件才允许覆盖（待处理/向量化中的不可删除）
+                if (sameNameFile != null
+                        && (Objects.equals(statusEnum, AiCustomerServiceFileStatusEnum.COMPLETED)
+                            || Objects.equals(statusEnum, AiCustomerServiceFileStatusEnum.FAILED))) {
+                    return Response.success(CheckFileRspVO.builder()
+                            .exists(false)
+                            .needUpload(true)
+                            .hasSameName(true)
+                            .sameNameFileId(sameNameFile.getId())
+                            .build());
+                }
+            }
             return Response.success(CheckFileRspVO.builder()
                     .exists(false)
                     .needUpload(true)

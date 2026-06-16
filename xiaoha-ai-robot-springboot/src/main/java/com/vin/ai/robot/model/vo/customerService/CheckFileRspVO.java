@@ -28,4 +28,14 @@ public class CheckFileRspVO {
      */
     private List<Integer> uploadedChunks;
 
+    /**
+     * 是否存在同名已完成文件（需用户确认覆盖）
+     */
+    private Boolean hasSameName;
+
+    /**
+     * 同名文件的记录 ID（用于覆盖时删除）
+     */
+    private Long sameNameFileId;
+
 }

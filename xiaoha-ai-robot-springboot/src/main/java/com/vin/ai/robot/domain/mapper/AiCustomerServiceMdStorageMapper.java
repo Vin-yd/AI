@@ -43,6 +43,14 @@ public interface AiCustomerServiceMdStorageMapper extends BaseMapper<AiCustomerS
     }
 
     /**
+     * 根据文件名查询（查同名已完成文件）
+     */
+    default AiCustomerServiceFileStorageDO selectByFileName(String fileName) {
+        return selectOne(Wrappers.<AiCustomerServiceFileStorageDO>lambdaQuery()
+                .eq(AiCustomerServiceFileStorageDO::getFileName, fileName));
+    }
+
+    /**
      * 已上传分片数 +1
      * @param id
      * @return

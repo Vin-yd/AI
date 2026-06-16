@@ -15,4 +15,9 @@ public class CheckFileReqVO {
     @NotBlank(message = "文件 MD5 不能为空")
     private String fileMd5;
 
+    /**
+     * 原始文件名（用于检测同名文件）
+     */
+    private String fileName;
+
 }

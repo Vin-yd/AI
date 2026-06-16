@@ -118,6 +118,14 @@
           </a-table>
       </a-drawer>
 
+       <!-- 同名文件覆盖确认框 -->
+      <a-modal v-model:open="overwriteConfirmOpen" width="420px" :centered=true
+        title="同名文件已存在" ok-text="覆盖上传" ok-type="danger" cancel-text="取消"
+        @ok="handleOverwriteConfirm">
+        <p class="text-gray-700">已存在同名文件【{{ sameNameFileName }}】，是否覆盖？</p>
+        <p class="text-gray-400 text-sm mt-2">覆盖后原文件将被永久删除，不可恢复。</p>
+      </a-modal>
+
        <!-- 删除 Markdown 问答文件确认框 -->
       <a-modal v-model:open="deleteMarkdownModelOpen" width="400px" :centered=true title="永久删除问答文件" ok-text="确认" ok-type="danger" cancel-text="取消"
       @ok="handleDeleteMarkdownModelOk()">
@@ -519,6 +527,34 @@ const handleFileSelect = (event) => {
      // 清空 input 的值，确保下次选择相同文件时也能触发 change 事件
   event.target.value = ''
 }
+// 同名文件覆盖确认框
+const overwriteConfirmOpen = ref(false)
+const sameNameFileId = ref(null)
+const sameNameFileName = ref('')
+
+// 确认覆盖同名文件
+const handleOverwriteConfirm = async () => {
+  overwriteConfirmOpen.value = false
+  if (!sameNameFileId.value) return
+
+  try {
+    const res = await deleteMarkdownFile(sameNameFileId.value)
+    if (res.data.success) {
+      message.success('已删除旧文件，开始上传新文件')
+      // 删除成功，继续上传
+      uploading.value = true
+      uploadProgress.value = 0
+      uploadStatus.value = 'active'
+      uploadFileInfoModelOpen.value = true
+      await doUpload()
+    } else {
+      message.error(res.data.message || '删除旧文件失败')
+    }
+  } catch {
+    message.error('删除旧文件失败')
+  }
+}
+
 // 是否展示 “删除 Markdown 文件” 确认框
 const deleteMarkdownModelOpen = ref(false)
 // 被删除的文件记录 ID
@@ -663,25 +699,32 @@ const uploadProgress = ref(0)
 const statusText = ref('')
 // 上传状态
 const uploadStatus = ref('active')
-// 开始上传
+// 开始上传（入口）
 const startUpload = async () => {
-  // 判断上传文件是否为空，以及 md5 是否计算完成
   if (!selectedFile.value || !fileMd5.value) return
-  
-  // 设置正在上传中...
   uploading.value = true
-  // 重置进度为 0
   uploadProgress.value = 0
-  
-   uploadStatus.value = 'active'
-  try {
-     // 计算总分片数
-    const totalChunks = Math.ceil(selectedFile.value.size / CHUNK_SIZE)
-    // 1. 检查文件是否存在（秒传）
-    statusText.value = '检查文件是否已存在...'
-    const checkResponse = await checkFile(fileMd5.value)
+  uploadStatus.value = 'active'
 
-    // 秒传成功
+  await doUpload()
+}
+
+// 实际执行上传逻辑
+const doUpload = async () => {
+  try {
+    const totalChunks = Math.ceil(selectedFile.value.size / CHUNK_SIZE)
+    statusText.value = '检查文件是否已存在...'
+    const checkResponse = await checkFile(fileMd5.value, selectedFile.value.name)
+
+    if (checkResponse.data.success && checkResponse.data.data.hasSameName) {
+      uploading.value = false
+      uploadFileInfoModelOpen.value = false
+      sameNameFileId.value = checkResponse.data.data.sameNameFileId
+      sameNameFileName.value = selectedFile.value.name
+      overwriteConfirmOpen.value = true
+      return
+    }
+
     if (checkResponse.data.success && checkResponse.data.data.exists && !checkResponse.data.data.needUpload) {
       uploadProgress.value = 100
       uploadStatus.value = 'success'
@@ -689,8 +732,7 @@ const startUpload = async () => {
       uploading.value = false
       return
     }
-    
-     // 2. 上传分片
+
     let uploadedChunks = []
 
     // 断点续传

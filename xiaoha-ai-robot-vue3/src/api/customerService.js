@@ -21,9 +21,9 @@ export function mergeFileChunk(fileMd5, timeout = 30000) {
         timeout: timeout // 自定义超时时间，默认30s
     })
 }
-// 检查文件是否存在（秒传）
-export function checkFile(fileMd5) {
-    return axios.post("/customer-service/file/check", { fileMd5 })
+// 检查文件是否存在（秒传 + 同名检测）
+export function checkFile(fileMd5, fileName) {
+    return axios.post("/customer-service/file/check", { fileMd5, fileName })
 }
 
 // 删除 Markdown 问答文件
