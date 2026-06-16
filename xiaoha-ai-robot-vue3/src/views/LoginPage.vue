@@ -297,7 +297,7 @@ function onClick(e) {
   clickX = e.clientX
   clickY = e.clientY
   clickTime = performance.now()
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 10; i++) {
     burstParticles.push(new BurstParticle(clickX, clickY))
   }
 }
@@ -314,19 +314,26 @@ function animate(timestamp) {
   burstParticles.forEach(p => p.update(dt))
   burstParticles = burstParticles.filter(p => !p.dead)
   particles.forEach(p => p.update())
-  drawLines(ctx)
+
+  // 每隔 3 帧画一次连线，大幅减少计算量
+  frameCount++
+  if (frameCount % 3 === 0) {
+    drawLines(ctx)
+  }
+
   burstParticles.forEach(p => p.draw(ctx))
   particles.forEach(p => p.draw(ctx))
 
   animationId = requestAnimationFrame(animate)
 }
 let lastTime = 0
+let frameCount = 0
 
 onMounted(() => {
   const canvas = canvasRef.value
   w = canvas.width = window.innerWidth
   h = canvas.height = window.innerHeight
-  for (let i = 0; i < 100; i++) particles.push(new Particle())
+  for (let i = 0; i < 60; i++) particles.push(new Particle())
 
   window.addEventListener('resize', () => {
     w = canvas.width = window.innerWidth
