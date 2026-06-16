@@ -117,6 +117,7 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public Response<Object> handleNotLoginException(HttpServletRequest request, HttpServletResponse httpResponse, NotLoginException e) {
         log.warn("{} request fail, not login", request.getRequestURI());
+        httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         Response<Object> result = Response.fail(ResponseCodeEnum.USER_NOT_LOGIN);
         if (isSseRequest(request)) {
             writeSseErrorResponse(httpResponse, result);
