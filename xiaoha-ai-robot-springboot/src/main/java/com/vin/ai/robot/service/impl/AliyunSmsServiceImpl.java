@@ -1,5 +1,6 @@
 package com.vin.ai.robot.service.impl;
 
+import com.vin.ai.robot.config.sms.AliyunSmsHelper;
 import com.vin.ai.robot.enums.ResponseCodeEnum;
 import com.vin.ai.robot.exception.BizException;
 import com.vin.ai.robot.service.SmsService;
@@ -22,7 +23,7 @@ public class AliyunSmsServiceImpl implements SmsService {
 
     @Override
     public void sendCode(String phone, String code) {
-        String templateParam = String.format("{\"code\":\"%s\"}", code);
+        String templateParam = String.format("{\"code\":\"%s\",\"min\":\"3\"}", code);
 
         boolean success = aliyunSmsHelper.sendMessage(signName, templateCode, phone, templateParam);
 

@@ -1,9 +1,8 @@
 <template>
     <!-- 左边栏 -->
-    <div 
+    <div
         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
         class="w-64 bg-[#f9fbff] border-r border-gray-200 fixed left-0 top-0 h-full transition-transform duration-300 ease-in-out z-10 overflow-y-auto">
-        <!-- 侧边栏内容区域 -->
         <div class="p-0 h-full flex flex-col">
             <!-- Logo 与应用名称 -->
              <div class="flex items-center justify-center p-4 cursor-pointer" @click="jumpToIndexPage">
@@ -11,9 +10,38 @@
               <span class="text-2xl font-bold font-sans tracking-wide text-gray-800">Vin-AI机器人</span>
             </div>
 
+             <!-- 用户区域 -->
+            <div v-if="userStore.isLoggedIn" class="px-3 mb-2">
+              <div class="flex items-center gap-2 px-2 py-2 bg-white rounded-xl border border-gray-100">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  {{ (userStore.userInfo?.nickname || userStore.userInfo?.phone || 'U')[0].toUpperCase() }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium text-gray-700 truncate">
+                    {{ userStore.userInfo?.nickname || '用户' }}
+                  </div>
+                  <div class="text-xs text-gray-400 truncate">
+                    {{ userStore.userInfo?.phone || '' }}
+                  </div>
+                </div>
+                <a-tooltip title="退出登录" placement="right">
+                  <button @click="handleLogout" class="p-1 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0">
+                    <span class="text-gray-400 text-sm">⏻</span>
+                  </button>
+                </a-tooltip>
+              </div>
+            </div>
+            <div v-else class="px-3 mb-2">
+              <button @click="jumpToLogin"
+                class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+                style="background: linear-gradient(135deg, #4d6bfe, #8b5cf6);">
+                <span class="text-sm font-medium">登 录</span>
+              </button>
+            </div>
+
              <!-- 开启新对话按钮 -->
              <button @click="jumpToIndexPage"
-              class="mx-auto mb-[34px] my-2 px-6 py-2 text-white rounded-xl transition-colors new-chat-btn w-fit cursor-pointer">
+              class="mx-auto my-2 px-6 py-2 text-white rounded-xl transition-colors new-chat-btn w-fit cursor-pointer">
               <SvgIcon name="new-chat" customCss="w-6 h-6 mr-1.5 inline text-[#4d6bfe]" />
               开启新对话
             </button>
@@ -24,6 +52,13 @@
           <SvgIcon name="customer-service" customCss="w-5 h-5 mr-2 inline mb-0" />
           <span>智能客服</span>
         </li>
+        <!-- 管理员：文件管理入口 -->
+        <li v-if="userStore.isAdmin"
+          class="flex items-center py-1 px-2 hover:bg-gray-100 rounded-lg cursor-pointer"
+          @click="jumpToCustomerServiceChatPage">
+          <span class="w-5 h-5 mr-2 inline-flex items-center justify-center text-xs">📁</span>
+          <span>知识库管理</span>
+        </li>
       </ul>
 
       <!-- 分割线 -->
@@ -32,24 +67,21 @@
                <!-- 历史对话区域 -->
             <div class="my-4 px-2 overflow-y-auto overflow-x-hidden flex-1" ref="historyChatContainerRef">
               <div class="space-y-1">
-                <!-- 使用 sticky 定位使标题在滚动时保持可见 -->
                 <div class="text-xs px-3 py-1 text-gray-500 sticky top-0 bg-[#f9fbff] z-10">历史对话</div>
-                 <div v-for="(historyChat, index) in historyChats" :key="index" 
-                  :class="['relative px-3 py-1 rounded-xl cursor-pointer transition-colors flex items-center justify-between', 
+                 <div v-for="(historyChat, index) in historyChats" :key="index"
+                  :class="['relative px-3 py-1 rounded-xl cursor-pointer transition-colors flex items-center justify-between',
                            selectedChatId === historyChat.uuid ? 'bg-[#e4edfd] text-[#4d6bfe]' : 'hover:bg-[rgb(239,246,255)]']"
                   @click="jumpToChatPage(historyChat.uuid)"
                   @mouseenter="showButton = historyChat.uuid" @mouseleave="showButton = null">
 
                     <a-tooltip placement="top">
-                            <!-- Tooltip 提示文字 -->
                             <template #title>
                               <span>{{ historyChat.summary }}</span>
                             </template>
 
                             <p class="text-[14px] overflow-hidden whitespace-nowrap">{{ historyChat.summary }}</p>
                     </a-tooltip>
-                    <!-- 下拉菜单 -->
-                     <a-dropdown>
+                    <a-dropdown>
                   <template #overlay>
                         <a-menu @click="handleMenuClick(historyChat.uuid, historyChat.id, historyChat.summary, $event)">
                   <a-menu-item key="rename">
@@ -62,7 +94,6 @@
                   </a-menu-item>
                 </a-menu>
                   </template>
-                        <!-- 右边菜单按钮 -->
                         <button
                             class="z-10 rounded-lg outline-none justify-center items-center bg-white
                             w-6 h-6 flex absolute right-2 top-1/2 transform -translate-y-1/2 transition-all duration-300 hover:bg-gray-50"
@@ -75,25 +106,23 @@
             </div>
         </div>
     </div>
-    
+
         <!-- 侧边栏切换按钮 -->
         <a-tooltip placement="bottom">
-        <!-- Tooltip 提示文字 -->
         <template #title>
           <span>{{ sidebarOpen ? '收缩边栏' : '打开边栏'}}</span>
         </template>
 
-        <button 
+        <button
           :class="sidebarOpen ? 'left-64' : 'left-0'"
           @click="toggleSidebar"
           class="fixed top-4 z-20 bg-white border border-gray-200 rounded-r-lg p-2 transition-all duration-300">
-            <!-- 图标 -->
             <SvgIcon :name="sidebarOpen ? 'sidebar-open' : 'sidebar-close'" :customCss="sidebarOpen ? 'w-6 h-6 text-gray-400' : 'w-7 h-7 text-gray-400'" />
         </button>
          </a-tooltip>
 
           <!-- 删除对话确认框 -->
-  <a-modal v-model:open="deleteChatModelOpen" width="400px" :centered=true title="永久删除对话" ok-text="确认" ok-type="danger" cancel-text="取消" 
+  <a-modal v-model:open="deleteChatModelOpen" width="400px" :centered=true title="永久删除对话" ok-text="确认" ok-type="danger" cancel-text="取消"
     @ok="handleDeleteChatModelOk()">
       <p>删除后，该对话将不可恢复。确认删除吗？</p>
   </a-modal>
@@ -120,59 +149,50 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount, toRaw } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import SvgIcon from '@/components/SvgIcon.vue'
 import { EditOutlined, EllipsisOutlined, DeleteOutlined } from '@ant-design/icons-vue'
 import { useRouter, useRoute } from 'vue-router'
-// 导入获取历史对话列表的API
 import { findHistoryChatPageList, deleteChat, renameChat } from '@/api/chat'
 import { message } from 'ant-design-vue'
+import { useUserStore } from '@/stores/userStore'
+
 const router = useRouter()
-// 定义 props, 对外部暴露配置项
+const userStore = useUserStore()
+
 const props = defineProps({
-  sidebarOpen: { type: Boolean, required: true }, // 左边栏是否展开
+  sidebarOpen: { type: Boolean, required: true },
 })
 
-// 定义 emits
 const emit = defineEmits(['toggle-sidebar'])
 
-// 切换侧边栏显示/隐藏
-const toggleSidebar = () => {
-  emit('toggle-sidebar')
-}
+const toggleSidebar = () => { emit('toggle-sidebar') }
 const route = useRoute()
 
 // 当前选中的聊天 ID
 const selectedChatId = ref(null)
-// 历史对话
 const historyChats = ref([])
-
-// 左边栏滚动区域引用
 const historyChatContainerRef = ref(null)
-
-// 是否还有下一页数据（默认有）
 const hasMore = ref(true)
-// 是否正在加载中 (解决并发请求后续页数据问题)
 const isLoadingMore = ref(false)
-onMounted(() => {
-  // 查询历史对话
-  fetchHistoryChats()
-  
-  // 检查当前路由是否有 chatId 参数
-  const currentChatId = route.params.chatId
-  if (currentChatId) {
-    // 设置当前选中的对话 ID
-    selectedChatId.value = currentChatId
+
+onMounted(async () => {
+  // 用户信息
+  if (userStore.isLoggedIn && !userStore.userInfo) {
+    try { await userStore.fetchUserInfo() } catch {}
   }
 
-  // 添加滚动监听事件
+  fetchHistoryChats()
+
+  const currentChatId = route.params.chatId
+  if (currentChatId) { selectedChatId.value = currentChatId }
+
   if (historyChatContainerRef.value) {
     historyChatContainerRef.value.addEventListener('scroll', handleScroll)
   }
 })
 
 onBeforeUnmount(() => {
-  // 移除滚动事件监听
   if (historyChatContainerRef.value) {
     historyChatContainerRef.value.removeEventListener('scroll', handleScroll);
   }
@@ -180,205 +200,103 @@ onBeforeUnmount(() => {
 
 const handleScroll = () => {
   if (historyChatContainerRef.value) {
-    // 获取滚动参数
     const { scrollTop, scrollHeight, clientHeight } = historyChatContainerRef.value
-    // 距离底部距离
     const scrollPosition = scrollHeight - scrollTop - clientHeight
-    
-     // 打印滚动过程中的详细日志
-    console.log('=== 滚动事件日志 ===')
-    console.log('scrollPosition:', scrollPosition)
-
-    // 当滚动到距离底部20px以内时，且有更多数据，且当前没有在加载中时，加载更多
     if (scrollPosition <= 20 && hasMore.value && !isLoadingMore.value) {
       loadMoreHistoryChats()
     }
   }
 }
-// 加载更多历史对话
+
 const loadMoreHistoryChats = async () => {
-  console.log('=== 开始加载更多历史对话 ===')
-  console.log('当前页码:', current.value)
-
-  // 双重检查：
-  // 1. 如果当前页面已经是最后一页，则不再发送请求
-  // 2. 如果已经有请求在进行中，则不再发送请求
-  if (!hasMore.value) {
-    console.log('=== 没有更多历史对话，不再请求 ===')
-    return
-  }
-  
-  if (isLoadingMore.value) {
-    console.log('=== 已有加载请求正在进行中，不再发送新请求 ===')
-    return
-  }
-  
-  // 设置加载状态为 true，防止并发请求
+  if (!hasMore.value || isLoadingMore.value) return
   isLoadingMore.value = true
-
-  // 计算下一页页码（向下滑动加载更早的历史对话，页码应该增加）
   const nextPageNo = current.value + 1
-  console.log('=== 计算下一页页码 ===', nextPageNo)
-
-  // 保存当前页码用于错误恢复
   const currentTemp = current.value
-  // 当前需要请求的页码
   current.value = nextPageNo
-
-  try {
-    await fetchHistoryChats();
-  } catch (error) {
-    // 恢复页码
-    current.value = currentTemp;
-  }
+  try { await fetchHistoryChats() }
+  catch { current.value = currentTemp }
 }
-// 分页相关状态
-// 当前页码（默认第一页）
+
 const current = ref(1)
-// 每页展示数据量
 const size = ref(20)
 
-/// 获取历史对话列表
 const fetchHistoryChats = async () => {
   findHistoryChatPageList(current.value, size.value).then(res => {
-    // 无论成功失败，请求完成后都需要重置加载状态
     isLoadingMore.value = false
-
     if (res.data.success) {
       const data = res.data.data
-
-      // 判断是否还有下一页(总页数 > 当前页)
       hasMore.value = res.data.pages > current.value
-
       if (data && data.length > 0) {
-        // 将新数据添加到历史对话列表末尾
         historyChats.value = [...historyChats.value, ...data]
       }
     }
-  }).catch((error) => {
-      // 错误处理，重置加载状态
-      console.error('加载历史对话失败:', error)
-      isLoadingMore.value = false
-  })
+  }).catch(() => { isLoadingMore.value = false })
 }
-// 当前显示右侧栏按钮的聊天 ID
+
 const showButton = ref(null)
-// 删除对话确认框是否展示
 const deleteChatModelOpen = ref(false)
-// 被删除的对话 UUID
 const deleteChatUUID = ref(null)
-// 重命名对话弹出框是否展示
 const renameChatModelOpen = ref(false)
-
-// 表单对象
-const formState = reactive({
-  id: null, // 被重命名对话 ID
-  summary: '' // 被重命名对话摘要
-})
-// 表单引用
+const formState = reactive({ id: null, summary: '' })
 const formRef = ref(null)
-// 校验规则
-const rules = {
-  summary: [
-   { required: true, message: '请输入对话摘要', trigger: 'change' }
-  ]
-}
-// 处理菜单点击
-const handleMenuClick = (uuid, id,summary,e) => {
-  if (e.key === 'delete') { // 删除对话
-    console.log('用户点击了删除对话：', uuid)
-    // 展示确认框
-    deleteChatModelOpen.value = true
-    // 保存当前被删除的对话 UUID
-    deleteChatUUID.value = uuid
-  } else if (e.key === 'rename') { // 重命名对话
-    console.log('用户点击了重命名对话：', uuid)
-    
-    // 展示弹出框
-    renameChatModelOpen.value = true
-    // 保存当前被重命名对话的 ID
-    formState.id = id
-    // 保存摘要
-    formState.summary = summary
+const rules = { summary: [{ required: true, message: '请输入对话摘要', trigger: 'change' }] }
 
-    console.log('表单数据：', formState)
+const handleMenuClick = (uuid, id, summary, e) => {
+  if (e.key === 'delete') {
+    deleteChatUUID.value = uuid
+    deleteChatModelOpen.value = true
+  } else if (e.key === 'rename') {
+    formState.id = id
+    formState.summary = summary
+    renameChatModelOpen.value = true
   }
 }
 
-// 删除对话确认框确认事件
 const handleDeleteChatModelOk = () => {
   deleteChat(deleteChatUUID.value).then((res) => {
-      if (res.data.success) {
-        message.success('删除成功')
-		
-		// 从 historyChats 数组中删除对应的对话
-        const index = historyChats.value.findIndex(chat => chat.uuid === deleteChatUUID.value);
-        if (index !== -1) {
-          historyChats.value.splice(index, 1);
-        }
-		
-        // 跳转首页
-        router.push({ name: 'Index'})
-      } else {
-        // 提示错误信息
-        message.error(res.data.message)
-      }
-  }).finally(
-    // 隐藏确认框
-    deleteChatModelOpen.value = false
-  )
+    if (res.data.success) {
+      message.success('删除成功')
+      const index = historyChats.value.findIndex(chat => chat.uuid === deleteChatUUID.value)
+      if (index !== -1) historyChats.value.splice(index, 1)
+      router.push({ name: 'Index'})
+    } else {
+      message.error(res.data.message)
+    }
+  }).finally(() => { deleteChatModelOpen.value = false })
 }
 
-// 重命名对话弹出框确认事件
 const handleRenameChatModelOk = () => {
-  formRef.value
-    .validate()
-    .then(() => { // 校验通过
-      renameChat(formState.id, formState.summary).then(res => {
-          if (!res.data.success) {
-            // 接口返回失败，提示错误消息
-            message.error(res.data.message)
-
-            return
-          }
-
-          // 提示操作成功
-          message.success('操作成功！')
-          
-          // 更新 historyChats 数组中对应 id 的对话摘要
-          const chatIndex = historyChats.value.findIndex(chat => chat.id === formState.id);
-          if (chatIndex !== -1) {
-            historyChats.value[chatIndex].summary = formState.summary;
-          }
-          
-          // 关闭弹出框
-          renameChatModelOpen.value = false
-      })
+  formRef.value.validate().then(() => {
+    renameChat(formState.id, formState.summary).then(res => {
+      if (!res.data.success) { message.error(res.data.message); return }
+      message.success('操作成功！')
+      const chatIndex = historyChats.value.findIndex(chat => chat.id === formState.id)
+      if (chatIndex !== -1) historyChats.value[chatIndex].summary = formState.summary
+      renameChatModelOpen.value = false
     })
-    .catch(error => { // 校验不通过
-      console.log('error', error);
-    })
+  }).catch(() => {})
 }
 
-// 跳转到首页
-const jumpToIndexPage = () => {
-  router.push('/')
-}
-// 跳转历史对话页
+const jumpToIndexPage = () => router.push('/')
 const jumpToChatPage = (chatId) => {
-  // 更新被选中的对话 ID
   selectedChatId.value = chatId
   router.push({ name: 'ChatPage', params: { chatId } })
 }
-// 跳转智能客服聊天页
-const jumpToCustomerServiceChatPage = () => {
-  router.push({ name: 'CustomerServiceChatPage'})
+const jumpToCustomerServiceChatPage = () => router.push({ name: 'CustomerServiceChatPage'})
+const jumpToLogin = () => router.push({ name: 'LoginPage' })
+
+// 退出登录
+const handleLogout = async () => {
+  await userStore.logout()
+  message.success('已退出登录')
+  router.push({ name: 'LoginPage' })
 }
 </script>
 
 <style scoped>
 .overflow-y-auto {
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent; /* 自定义滚动条颜色 */
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
 
 .new-chat-btn {

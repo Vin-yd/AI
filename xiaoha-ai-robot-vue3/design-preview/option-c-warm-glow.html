@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option C - 自然暖光渐变</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #faf9f6;
+    overflow: hidden;
+  }
+
+  /* 动态渐变光晕 */
+  .bg-glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: 0;
+    pointer-events: none;
+  }
+  .bg-glow.amber {
+    width: 500px; height: 500px;
+    background: #f59e0b;
+    opacity: 0.12;
+    top: -150px; left: -150px;
+    animation: glowShift1 12s ease-in-out infinite;
+  }
+  .bg-glow.rose {
+    width: 400px; height: 400px;
+    background: #f472b6;
+    opacity: 0.1;
+    bottom: -120px; right: -120px;
+    animation: glowShift2 15s ease-in-out infinite;
+  }
+  .bg-glow.sky {
+    width: 350px; height: 350px;
+    background: #38bdf8;
+    opacity: 0.08;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: glowShift3 10s ease-in-out infinite;
+  }
+  @keyframes glowShift1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(80px, 60px) scale(1.2); }
+  }
+  @keyframes glowShift2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-50px, -40px) scale(1.3); }
+  }
+  @keyframes glowShift3 {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-30%, -70%) scale(1.5); opacity: 0.15; }
+  }
+
+  /* 装饰网格 */
+  .grid-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* 卡片 */
+  .login-card {
+    position: relative; z-index: 1;
+    width: 420px;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 28px;
+    padding: 44px 36px;
+    box-shadow:
+      0 4px 6px rgba(0,0,0,0.02),
+      0 16px 48px rgba(0,0,0,0.06),
+      0 0 0 1px rgba(255,255,255,0.5) inset;
+    animation: cardIn 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .card-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .logo-hex {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    margin-bottom: 14px;
+    transform: rotate(0deg);
+    animation: hexRotate 6s linear infinite;
+  }
+  @keyframes hexRotate {
+    0%, 100% { transform: rotate(0deg); border-radius: 18px; }
+    50% { transform: rotate(10deg); border-radius: 22px; }
+  }
+  .card-header h1 {
+    font-size: 22px; font-weight: 700;
+    color: #1c1917;
+    letter-spacing: 1px;
+  }
+  .card-header p {
+    font-size: 13px; color: #78716c;
+    margin-top: 4px; font-weight: 400;
+  }
+
+  .input-group { margin-bottom: 18px; }
+  .input-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 500;
+    color: #44403c;
+    margin-bottom: 8px;
+  }
+  .input-label .dot {
+    width: 6px; height: 6px;
+    background: #f59e0b;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .input-field {
+    width: 100%; padding: 14px 16px;
+    background: rgba(0,0,0,0.02);
+    border: 1.5px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    font-size: 15px; font-family: inherit;
+    color: #1c1917;
+    outline: none;
+    transition: all 0.3s;
+  }
+  .input-field::placeholder { color: #a8a29e; }
+  .input-field:focus {
+    border-color: #f59e0b;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(245,158,11,0.08);
+  }
+
+  .code-row { display: flex; gap: 10px; }
+  .code-row .input-field { flex: 1; }
+  .send-code-btn {
+    padding: 0 18px;
+    border: 1.5px solid rgba(245,158,11,0.3);
+    background: rgba(245,158,11,0.04);
+    color: #d97706; border-radius: 14px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; white-space: nowrap;
+    transition: all 0.3s; font-family: inherit;
+    min-width: 105px;
+  }
+  .send-code-btn:hover {
+    background: rgba(245,158,11,0.1);
+    border-color: rgba(245,158,11,0.5);
+  }
+  .send-code-btn:disabled {
+    opacity: 0.4; cursor: not-allowed;
+  }
+
+  .login-btn {
+    width: 100%; padding: 15px;
+    border: none;
+    background: linear-gradient(135deg, #1c1917, #292524);
+    color: white; border-radius: 14px;
+    font-size: 16px; font-weight: 600;
+    cursor: pointer; margin-top: 8px;
+    transition: all 0.3s;
+    font-family: inherit;
+    letter-spacing: 0.5px;
+    position: relative; overflow: hidden;
+  }
+  .login-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    transition: left 0.6s;
+  }
+  .login-btn:hover::before { left: 100%; }
+  .login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+  }
+  .login-btn:active { transform: translateY(0); }
+
+  .info-banner {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px;
+    background: rgba(245,158,11,0.06);
+    border-radius: 14px;
+    margin-top: 24px;
+    font-size: 12px; color: #78716c;
+    line-height: 1.6;
+  }
+  .info-banner .icon { font-size: 20px; flex-shrink: 0; }
+
+  .footer-text {
+    text-align: center; margin-top: 18px;
+    font-size: 12px; color: #a8a29e;
+  }
+  .footer-text a { color: #d97706; text-decoration: none; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="bg-glow amber"></div>
+<div class="bg-glow rose"></div>
+<div class="bg-glow sky"></div>
+<div class="grid-overlay"></div>
+
+<div class="login-card">
+  <div class="card-header">
+    <div class="logo-hex">✦</div>
+    <h1>欢迎使用 Vin-AI</h1>
+    <p>手机号验证码快速登录，新用户自动注册</p>
+  </div>
+
+  <div class="input-group">
+    <label class="input-label"><span class="dot"></span> 手机号</label>
+    <input class="input-field" type="tel" placeholder="请输入您的手机号" maxlength="11" id="phone">
+  </div>
+
+  <div class="input-group">
+    <label class="input-label"><span class="dot"></span> 验证码</label>
+    <div class="code-row">
+      <input class="input-field" type="text" placeholder="5 位数字验证码" maxlength="5" id="code">
+      <button class="send-code-btn" id="sendBtn" onclick="sendCode()">获取验证码</button>
+    </div>
+  </div>
+
+  <button class="login-btn" onclick="login()">登 录 / 注 册</button>
+
+  <div class="info-banner">
+    <span class="icon">💡</span>
+    <span>首次登录将自动创建账号，登录即表示同意 <a href="#">服务协议</a> 和 <a href="#">隐私政策</a></span>
+  </div>
+</div>
+
+<script>
+  let countdown = 0;
+  function sendCode() {
+    if (countdown > 0) return;
+    const phone = document.getElementById('phone').value;
+    if (!phone || phone.length < 11) {
+      alert('请输入正确的手机号');
+      return;
+    }
+    countdown = 60;
+    const btn = document.getElementById('sendBtn');
+    const update = () => {
+      if (countdown <= 0) { btn.textContent = '获取验证码'; btn.disabled = false; return; }
+      btn.textContent = countdown + 's 后重试';
+      btn.disabled = true;
+      countdown--;
+      setTimeout(update, 1000);
+    };
+    update();
+  }
+
+  function login() {
+    const phone = document.getElementById('phone').value;
+    const code = document.getElementById('code').value;
+    if (!phone || !code) { alert('请填写手机号和验证码'); return; }
+    alert('模拟登录成功！\n手机号: ' + phone);
+  }
+</script>
+</body>
+</html>

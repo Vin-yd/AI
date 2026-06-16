@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option A - 极简科技蓝</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
+  }
+
+  /* 动态背景气泡 */
+  .bg-bubbles {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    animation: floatUp linear infinite;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+  }
+
+  /* 主卡片 */
+  .login-card {
+    position: relative;
+    z-index: 1;
+    width: 440px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 48px 40px;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.3) inset;
+    animation: cardIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .card-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .logo-icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, #667eea, #4d6bfe);
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    margin-bottom: 16px;
+    animation: logoFloat 3s ease-in-out infinite;
+  }
+  @keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .card-header h1 {
+    font-size: 24px; font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+  }
+  .card-header p {
+    font-size: 14px; color: #888;
+    font-weight: 400;
+  }
+
+  /* 手机号输入 */
+  .input-group {
+    margin-bottom: 20px;
+  }
+  .input-label {
+    display: block;
+    font-size: 13px; font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+  }
+  .input-field {
+    width: 100%; padding: 14px 16px;
+    border: 2px solid #e8ecf1;
+    border-radius: 14px;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.3s;
+    background: #f8fafc;
+    color: #1a1a2e;
+  }
+  .input-field:focus {
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+  }
+
+  /* 验证码行 */
+  .code-row {
+    display: flex; gap: 12px;
+  }
+  .code-row .input-field { flex: 1; }
+  .send-code-btn {
+    padding: 0 20px;
+    border: none;
+    background: linear-gradient(135deg, #667eea, #4d6bfe);
+    color: white; border-radius: 14px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s;
+    font-family: inherit;
+    min-width: 110px;
+  }
+  .send-code-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(102,126,234,0.35);
+  }
+  .send-code-btn:disabled {
+    background: #c4c9d4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* 登录按钮 */
+  .login-btn {
+    width: 100%; padding: 15px;
+    border: none;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: white; border-radius: 14px;
+    font-size: 16px; font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.3s;
+    font-family: inherit;
+    letter-spacing: 0.5px;
+  }
+  .login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(26,26,46,0.4);
+  }
+  .login-btn:active { transform: translateY(0); }
+
+  .footer-text {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 12px; color: #999;
+  }
+  .footer-text a { color: #667eea; text-decoration: none; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- 动态气泡 -->
+<div class="bg-bubbles" id="bubbles"></div>
+
+<!-- 卡片 -->
+<div class="login-card">
+  <div class="card-header">
+    <div class="logo-icon">🤖</div>
+    <h1>欢迎回来</h1>
+    <p>手机号验证码登录 Vin-AI</p>
+  </div>
+
+  <div class="input-group">
+    <label class="input-label">手机号</label>
+    <input class="input-field" type="tel" placeholder="请输入手机号" maxlength="11" id="phone">
+  </div>
+
+  <div class="input-group">
+    <label class="input-label">验证码</label>
+    <div class="code-row">
+      <input class="input-field" type="text" placeholder="请输入验证码" maxlength="5" id="code">
+      <button class="send-code-btn" id="sendBtn" onclick="sendCode()">获取验证码</button>
+    </div>
+  </div>
+
+  <button class="login-btn" onclick="login()">登 录 / 注 册</button>
+
+  <p class="footer-text">登录即表示同意 <a href="#">服务协议</a> 和 <a href="#">隐私政策</a></p>
+</div>
+
+<script>
+  // 生成背景气泡
+  const bubbles = document.getElementById('bubbles');
+  for (let i = 0; i < 12; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = 40 + Math.random() * 80;
+    b.style.width = size + 'px';
+    b.style.height = size + 'px';
+    b.style.left = Math.random() * 100 + '%';
+    b.style.animationDuration = 8 + Math.random() * 12 + 's';
+    b.style.animationDelay = Math.random() * 10 + 's';
+    bubbles.appendChild(b);
+  }
+
+  let countdown = 0;
+  function sendCode() {
+    if (countdown > 0) return;
+    const phone = document.getElementById('phone').value;
+    if (!phone || phone.length < 11) {
+      alert('请输入正确的手机号');
+      return;
+    }
+    countdown = 60;
+    const btn = document.getElementById('sendBtn');
+    const update = () => {
+      if (countdown <= 0) { btn.textContent = '获取验证码'; btn.disabled = false; return; }
+      btn.textContent = countdown + 's 后重试';
+      btn.disabled = true;
+      countdown--;
+      setTimeout(update, 1000);
+    };
+    update();
+  }
+
+  function login() {
+    const phone = document.getElementById('phone').value;
+    const code = document.getElementById('code').value;
+    if (!phone || !code) { alert('请填写手机号和验证码'); return; }
+    alert('模拟登录成功！\n手机号: ' + phone);
+  }
+</script>
+</body>
+</html>

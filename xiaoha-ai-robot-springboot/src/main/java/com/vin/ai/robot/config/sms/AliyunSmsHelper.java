@@ -1,4 +1,4 @@
-package com.vin.ai.robot.service.impl;
+package com.vin.ai.robot.config.sms;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

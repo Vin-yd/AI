@@ -1,41 +1,55 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
-// 统一在这里声明所有路由
 const routes = [
-   {
-        path: '/', // 路由地址
-        name: 'Index', // 命名路由
-        component: () => import('@/views/Index.vue'), // 对应组件
-        meta: { // meta 信息
-            title: '小哈 AI 机器人首页' // 页面标题
-        }
+    {
+        path: '/login',
+        name: 'LoginPage',
+        component: () => import('@/views/LoginPage.vue'),
+        meta: { title: '登录 - Vin-AI 机器人' }
     },
     {
-        path: '/chat/:chatId', // 路由地址
-        name: 'ChatPage', // 命名路由
-        component: () => import('@/views/ChatPage.vue'), // 对应组件
-        meta: { // meta 信息
-            title: '对话聊天页' // 页面标题
-        }
+        path: '/',
+        name: 'Index',
+        component: () => import('@/views/Index.vue'),
+        meta: { title: '小哈 AI 机器人首页', requiresAuth: true }
     },
-     {
-        path: '/customer-service/chat', // 路由地址
-        name: 'CustomerServiceChatPage', // 命名路由
-        component: () => import('@/views/CustomerServiceChatPage.vue'), // 对应组件
-        meta: { // meta 信息
-            title: '智能客服聊天页' // 页面标题
-        }
+    {
+        path: '/chat/:chatId',
+        name: 'ChatPage',
+        component: () => import('@/views/ChatPage.vue'),
+        meta: { title: '对话聊天页', requiresAuth: true }
+    },
+    {
+        path: '/customer-service/chat',
+        name: 'CustomerServiceChatPage',
+        component: () => import('@/views/CustomerServiceChatPage.vue'),
+        meta: { title: '智能客服聊天页', requiresAuth: true }
     }
 ]
 
-// 创建路由
 const router = createRouter({
-    // 指定路由模式，hash 模式指的是 URL 的路径是通过 hash 符号（#）进行标识
     history: createWebHashHistory(),
-    // routes: routes 的缩写
-    routes, 
+    routes,
 })
 
-// ES6 模块导出语句，它用于将 router 对象导出，以便其他文件可以导入和使用这个对象
-export default router
+// 全局前置守卫：未登录跳转登录页
+router.beforeEach((to, from, next) => {
+    const token = localStorage.getItem('token')
+    if (to.meta.requiresAuth && !token) {
+        next({ name: 'LoginPage' })
+    } else if (to.name === 'LoginPage' && token) {
+        // 已登录用户访问登录页，重定向到首页
+        next({ name: 'Index' })
+    } else {
+        next()
+    }
+})
 
+// 动态设置页面标题
+router.afterEach((to) => {
+    if (to.meta.title) {
+        document.title = to.meta.title
+    }
+})
+
+export default router

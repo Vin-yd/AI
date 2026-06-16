@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option B - 深色粒子动效</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0a0a0f;
+    overflow: hidden;
+    cursor: default;
+    user-select: none;
+  }
+
+  /* 粒子画布 */
+  canvas#particles {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  /* 光晕 */
+  .glow-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.3;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .glow-orb.blue {
+    width: 400px; height: 400px;
+    background: #4d6bfe;
+    top: -100px; right: -100px;
+    animation: orbDrift1 8s ease-in-out infinite;
+  }
+  .glow-orb.purple {
+    width: 300px; height: 300px;
+    background: #8b5cf6;
+    bottom: -80px; left: -80px;
+    animation: orbDrift2 10s ease-in-out infinite;
+  }
+  @keyframes orbDrift1 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-60px, 40px); }
+  }
+  @keyframes orbDrift2 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(50px, -30px); }
+  }
+
+  /* 扫描线 */
+  .scan-line {
+    position: fixed; top: 0; left: 0; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(77,107,254,0.15), transparent);
+    z-index: 1; pointer-events: none;
+    animation: scanDown 8s linear infinite;
+  }
+  @keyframes scanDown {
+    0% { top: -2px; }
+    100% { top: 100vh; }
+  }
+
+  /* 装饰环形 */
+  .deco-ring {
+    position: fixed;
+    border: 1px solid rgba(77,107,254,0.08);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .deco-ring.r1 {
+    width: 600px; height: 600px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
+    animation: ringSpin 30s linear infinite;
+  }
+  .deco-ring.r2 {
+    width: 800px; height: 800px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
+    animation: ringSpin 45s linear infinite reverse;
+    border-style: dashed;
+    border-color: rgba(139,92,246,0.05);
+  }
+  @keyframes ringSpin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  /* 四角装饰 */
+  .corner-deco {
+    position: fixed;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+  .corner-deco.tl { top: 24px; left: 24px; }
+  .corner-deco.tr { top: 24px; right: 24px; }
+  .corner-deco.bl { bottom: 24px; left: 24px; }
+  .corner-deco.br { bottom: 24px; right: 24px; }
+  .corner-dot {
+    width: 4px; height: 4px;
+    background: #4d6bfe;
+    border-radius: 50%;
+    margin: 8px;
+    animation: dotBlink 2s ease-in-out infinite;
+  }
+  .corner-dot:nth-child(2) { animation-delay: 0.5s; opacity: 0.6; }
+  .corner-dot:nth-child(3) { animation-delay: 1s; opacity: 0.3; }
+  @keyframes dotBlink {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  /* 点击波纹 */
+  .ripple {
+    position: fixed;
+    border: 1px solid rgba(77,107,254,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 5;
+    animation: rippleOut 1s ease-out forwards;
+  }
+  @keyframes rippleOut {
+    0% { width: 0; height: 0; opacity: 1; }
+    100% { width: 200px; height: 200px; opacity: 0; transform: translate(-100px, -100px); }
+  }
+
+  /* 主卡片 */
+  .login-card {
+    position: relative; z-index: 2;
+    width: 420px;
+    background: rgba(20,20,35,0.85);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 44px 36px;
+    animation: cardIn 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: border-color 0.5s;
+  }
+  .login-card:hover {
+    border-color: rgba(77,107,254,0.2);
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(24px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .card-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .logo-ring {
+    width: 64px; height: 64px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #4d6bfe, #8b5cf6);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin-bottom: 16px;
+    box-shadow: 0 0 40px rgba(77,107,254,0.3);
+    animation: logoPulse 3s ease-in-out infinite;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+  .logo-ring:hover {
+    transform: scale(1.1);
+  }
+  .logo-ring:active {
+    animation: logoBurst 0.3s ease-out;
+  }
+  @keyframes logoBurst {
+    0% { transform: scale(1); box-shadow: 0 0 40px rgba(77,107,254,0.3); }
+    50% { transform: scale(1.3); box-shadow: 0 0 80px rgba(139,92,246,0.8); }
+    100% { transform: scale(1); box-shadow: 0 0 40px rgba(77,107,254,0.3); }
+  }
+  @keyframes logoPulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(77,107,254,0.3); }
+    50% { box-shadow: 0 0 60px rgba(77,107,254,0.5); }
+  }
+  .card-header h1 {
+    font-size: 24px; font-weight: 700;
+    color: #f1f5f9;
+  }
+  .card-header p {
+    font-size: 14px; color: #94a3b8;
+    margin-top: 4px;
+  }
+
+  /* 状态指示条 */
+  .status-bar {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; margin-top: 8px;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    background: #22c55e; border-radius: 50%;
+    animation: statusPulse 2s ease-in-out infinite;
+  }
+  @keyframes statusPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px #22c55e; }
+    50% { opacity: 0.4; box-shadow: 0 0 2px #22c55e; }
+  }
+  .status-text {
+    font-size: 11px; color: #64748b;
+    letter-spacing: 1px;
+  }
+
+  .input-group { margin-bottom: 18px; }
+  .input-label {
+    display: block;
+    font-size: 12px; font-weight: 500;
+    color: #94a3b8; letter-spacing: 0.5px;
+    margin-bottom: 8px; text-transform: uppercase;
+  }
+  .input-field {
+    width: 100%; padding: 14px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    font-size: 15px; font-family: inherit;
+    color: #f1f5f9;
+    outline: none;
+    transition: all 0.3s;
+  }
+  .input-field::placeholder { color: #475569; }
+  .input-field:focus {
+    border-color: #4d6bfe;
+    background: rgba(77,107,254,0.06);
+    box-shadow: 0 0 0 3px rgba(77,107,254,0.15), 0 0 30px rgba(77,107,254,0.08);
+  }
+
+  .code-row { display: flex; gap: 10px; }
+  .code-row .input-field { flex: 1; }
+  .send-code-btn {
+    padding: 0 18px;
+    border: 1px solid rgba(77,107,254,0.4);
+    background: rgba(77,107,254,0.1);
+    color: #8fa8ff; border-radius: 12px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; white-space: nowrap;
+    transition: all 0.3s; font-family: inherit;
+    min-width: 105px;
+    position: relative; overflow: hidden;
+  }
+  .send-code-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.08) 50%, transparent 60%);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+  .send-code-btn:hover::after { transform: translateX(100%); }
+  .send-code-btn:hover {
+    background: rgba(77,107,254,0.18);
+    border-color: rgba(77,107,254,0.6);
+    color: #b4c2ff;
+  }
+  .send-code-btn:disabled {
+    opacity: 0.4; cursor: not-allowed;
+  }
+
+  .login-btn {
+    width: 100%; padding: 15px;
+    border: none;
+    background: linear-gradient(135deg, #4d6bfe, #8b5cf6);
+    color: white; border-radius: 12px;
+    font-size: 16px; font-weight: 600;
+    cursor: pointer; margin-top: 8px;
+    transition: all 0.3s;
+    font-family: inherit;
+    position: relative; overflow: hidden;
+    letter-spacing: 2px;
+  }
+  .login-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s;
+  }
+  .login-btn:hover::after { left: 100%; }
+  .login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(77,107,254,0.4);
+  }
+  .login-btn:active { transform: translateY(0) scale(0.98); }
+
+  .divider {
+    display: flex; align-items: center;
+    margin: 24px 0; gap: 12px;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px;
+    background: rgba(255,255,255,0.06);
+  }
+  .divider span {
+    font-size: 12px; color: #475569;
+    letter-spacing: 1px;
+  }
+
+  .footer-text {
+    text-align: center; margin-top: 20px;
+    font-size: 12px; color: #475569;
+  }
+  .footer-text a { color: #8fa8ff; text-decoration: none; transition: color 0.2s; }
+  .footer-text a:hover { color: #b4c2ff; }
+
+  /* 卡片右上角版本号 */
+  .version-tag {
+    position: absolute;
+    top: 16px; right: 20px;
+    font-size: 10px; color: #475569;
+    letter-spacing: 1.5px;
+    font-family: 'Courier New', monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="glow-orb blue"></div>
+<div class="glow-orb purple"></div>
+<div class="deco-ring r1"></div>
+<div class="deco-ring r2"></div>
+<div class="scan-line"></div>
+
+<!-- 四角装饰 -->
+<div class="corner-deco tl">
+  <div class="corner-dot"></div><div class="corner-dot"></div><div class="corner-dot"></div>
+</div>
+<div class="corner-deco tr">
+  <div class="corner-dot"></div><div class="corner-dot"></div><div class="corner-dot"></div>
+</div>
+<div class="corner-deco bl">
+  <div class="corner-dot"></div><div class="corner-dot"></div><div class="corner-dot"></div>
+</div>
+<div class="corner-deco br">
+  <div class="corner-dot"></div><div class="corner-dot"></div><div class="corner-dot"></div>
+</div>
+
+<canvas id="particles"></canvas>
+
+<div class="login-card" id="loginCard">
+  <div class="version-tag">v2.0.1</div>
+
+  <div class="card-header">
+    <div class="logo-ring" id="logoIcon">⚡</div>
+    <h1>Vin-AI Robot</h1>
+    <p>开启智能对话之旅</p>
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      <span class="status-text">SYSTEM ONLINE</span>
+    </div>
+  </div>
+
+  <div class="input-group">
+    <label class="input-label">手机号</label>
+    <input class="input-field" type="tel" placeholder="请输入手机号" maxlength="11" id="phone">
+  </div>
+
+  <div class="input-group">
+    <label class="input-label">验证码</label>
+    <div class="code-row">
+      <input class="input-field" type="text" placeholder="输入 5 位验证码" maxlength="5" id="code">
+      <button class="send-code-btn" id="sendBtn" onclick="sendCode()">获取验证码</button>
+    </div>
+  </div>
+
+  <button class="login-btn" id="loginBtn">登 录 / 注 册</button>
+
+  <div class="divider"><span>AI 智能助手</span></div>
+
+  <p class="footer-text">登录即表示同意 <a href="#">服务协议</a> 和 <a href="#">隐私政策</a></p>
+</div>
+
+<script>
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let w, h;
+  let particles = [];
+  let mouseX = -1000, mouseY = -1000;
+  let mouseClicked = false;
+  let clickX = 0, clickY = 0, clickTime = 0;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // 鼠标追踪
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+  document.addEventListener('mouseleave', () => {
+    mouseX = -1000;
+    mouseY = -1000;
+  });
+
+  // 点击粒子爆发
+  document.addEventListener('click', (e) => {
+    clickX = e.clientX;
+    clickY = e.clientY;
+    clickTime = performance.now();
+
+    // 在点击位置生成爆发粒子
+    for (let i = 0; i < 20; i++) {
+      particles.push(new BurstParticle(clickX, clickY));
+    }
+
+    // 在点击位置创建波纹元素
+    const ripple = document.createElement('div');
+    ripple.className = 'ripple';
+    ripple.style.left = clickX + 'px';
+    ripple.style.top = clickY + 'px';
+    document.body.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 1000);
+  });
+
+  class Particle {
+    constructor() {
+      this.reset();
+      this.y = Math.random() * h;
+    }
+    reset() {
+      this.x = Math.random() * w;
+      this.y = -10;
+      this.baseSize = 1 + Math.random() * 2;
+      this.size = this.baseSize;
+      this.baseSpeed = 0.3 + Math.random() * 0.8;
+      this.speed = this.baseSpeed;
+      this.opacity = 0.2 + Math.random() * 0.5;
+      this.wave = Math.random() * Math.PI * 2;
+      this.glowRadius = 0;
+    }
+    update() {
+      // 鼠标引力/斥力交互
+      const dx = this.x - mouseX;
+      const dy = this.y - mouseY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const influenceRadius = 150;
+
+      this.glowRadius = 0;
+
+      if (dist < influenceRadius) {
+        const force = (1 - dist / influenceRadius);
+        // 靠近鼠标，微微偏移 + 变亮变大
+        this.x += (dx / dist) * force * 1.2;
+        this.y += (dy / dist) * force * 1.2;
+        this.size = this.baseSize * (1 + force * 2.5);
+        this.opacity = Math.min(1, 0.2 + force * 0.8);
+        this.speed = this.baseSpeed * (1 + force * 3);
+        this.glowRadius = force * 8;
+      } else {
+        this.size += (this.baseSize - this.size) * 0.05;
+        this.speed += (this.baseSpeed - this.speed) * 0.05;
+      }
+
+      this.y += this.speed;
+      this.x += Math.sin(this.wave + this.y * 0.01) * 0.3;
+
+      // 点击冲击波效果
+      if (clickTime > 0) {
+        const timeSince = performance.now() - clickTime;
+        if (timeSince < 800) {
+          const cdx = this.x - clickX;
+          const cdy = this.y - clickY;
+          const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+          const waveRadius = timeSince * 0.5;
+          const band = 30;
+          if (Math.abs(cdist - waveRadius) < band) {
+            const intensity = 1 - Math.abs(cdist - waveRadius) / band;
+            this.x += (cdx / cdist) * intensity * 15;
+            this.y += (cdy / cdist) * intensity * 15;
+            this.opacity = Math.min(1, this.opacity + intensity * 0.6);
+            this.size = this.baseSize * (1 + intensity * 4);
+            this.glowRadius = intensity * 12;
+          }
+        }
+      }
+
+      if (this.y > h + 10) { this.reset(); this.y = -10; }
+      if (this.x < -10) this.x = w + 10;
+      if (this.x > w + 10) this.x = -10;
+    }
+    draw() {
+      // 发光光晕
+      if (this.glowRadius > 0.5) {
+        const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.glowRadius);
+        glow.addColorStop(0, `rgba(139, 146, 255, ${this.opacity * 0.6})`);
+        glow.addColorStop(1, 'rgba(139, 146, 255, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.glowRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 主体圆点
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(139, 146, 255, ${this.opacity})`;
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // 爆发粒子（点击时产生，短生命周期）
+  class BurstParticle {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 6;
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed;
+      this.size = 1 + Math.random() * 2.5;
+      this.opacity = 1;
+      this.life = 0;
+      this.maxLife = 0.5 + Math.random() * 1;
+    }
+    update(dt) {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.vx *= 0.96;
+      this.vy *= 0.96;
+      this.life += dt;
+      this.opacity = Math.max(0, 1 - this.life / this.maxLife);
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(180, 180, 255, ${this.opacity})`;
+      ctx.arc(this.x, this.y, this.size * this.opacity, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    get dead() { return this.life >= this.maxLife; }
+  }
+
+  for (let i = 0; i < 100; i++) particles.push(new Particle());
+
+  let burstParticles = [];
+  let lastTime = performance.now();
+
+  function drawLines() {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        // 连线距离扩大到 120px
+        if (dist < 120) {
+          const lineOpacity = 0.08 * (1 - dist / 120);
+          // 鼠标附近的连线更亮
+          const midX = (particles[i].x + particles[j].x) / 2;
+          const midY = (particles[i].y + particles[j].y) / 2;
+          const mouseDist = Math.sqrt((midX - mouseX) ** 2 + (midY - mouseY) ** 2);
+          const brightness = mouseDist < 180 ? 1 + (1 - mouseDist / 180) * 2 : 1;
+
+          ctx.strokeStyle = `rgba(139, 146, 255, ${lineOpacity * brightness})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function animate(timestamp) {
+    const dt = (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // 更新爆发粒子
+    burstParticles.forEach(p => p.update(dt));
+    burstParticles = burstParticles.filter(p => !p.dead);
+
+    // 更新普通粒子
+    particles.forEach(p => p.update());
+
+    // 绘制
+    drawLines();
+    burstParticles.forEach(p => p.draw());
+    particles.forEach(p => p.draw());
+
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+
+  // === 卡片交互 ===
+  const logoIcon = document.getElementById('logoIcon');
+  logoIcon.addEventListener('click', (e) => {
+    e.stopPropagation();
+    logoIcon.style.animation = 'none';
+    logoIcon.offsetHeight; // reflow
+    logoIcon.style.animation = 'logoBurst 0.3s ease-out';
+  });
+
+  // === 验证码逻辑 ===
+  let countdown = 0;
+  function sendCode() {
+    if (countdown > 0) return;
+    const phone = document.getElementById('phone').value;
+    if (!phone || phone.length < 11) {
+      alert('请输入正确的手机号');
+      return;
+    }
+    countdown = 60;
+    const btn = document.getElementById('sendBtn');
+    const update = () => {
+      if (countdown <= 0) { btn.textContent = '获取验证码'; btn.disabled = false; return; }
+      btn.textContent = countdown + 's 后重试';
+      btn.disabled = true;
+      countdown--;
+      setTimeout(update, 1000);
+    };
+    update();
+  }
+
+  function login() {
+    const phone = document.getElementById('phone').value;
+    const code = document.getElementById('code').value;
+    if (!phone || !code) { alert('请填写手机号和验证码'); return; }
+    // 登录按钮光效
+    const btn = document.getElementById('loginBtn');
+    btn.style.boxShadow = '0 0 60px rgba(77,107,254,0.8)';
+    setTimeout(() => { btn.style.boxShadow = ''; }, 600);
+    alert('模拟登录成功！\n手机号: ' + phone);
+  }
+</script>
+</body>
+</html>
