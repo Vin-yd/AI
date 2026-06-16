@@ -8,38 +8,28 @@ public interface ChatService {
 
     /**
      * 新建对话
-     * @param newChatReqVO
-     * @return
      */
-    Response<NewChatRspVO> newChat(NewChatReqVO newChatReqVO);
+    Response<NewChatRspVO> newChat(NewChatReqVO newChatReqVO, Long userId);
 
     /**
-     * 查询历史消息
-     * @param findChatHistoryMessagePageListReqVO
-     * @return
+     * 查询历史消息（含归属校验）
      */
-    PageResponse<FindChatHistoryMessagePageListRspVO> findChatHistoryMessagePageList(FindChatHistoryMessagePageListReqVO findChatHistoryMessagePageListReqVO);
+    PageResponse<FindChatHistoryMessagePageListRspVO> findChatHistoryMessagePageList(
+            FindChatHistoryMessagePageListReqVO reqVO, Long userId);
 
     /**
      * 查询历史对话
-     * @param findChatHistoryPageListReqVO
-     * @return
      */
-    PageResponse<FindChatHistoryPageListRspVO> findChatHistoryPageList(FindChatHistoryPageListReqVO findChatHistoryPageListReqVO);
+    PageResponse<FindChatHistoryPageListRspVO> findChatHistoryPageList(
+            FindChatHistoryPageListReqVO reqVO, Long userId);
 
     /**
-     * 重命名对话摘要
-     * @param renameChatReqVO
-     * @return
+     * 重命名对话摘要（含归属校验）
      */
-    Response<?> renameChatSummary(RenameChatReqVO renameChatReqVO);
+    Response<?> renameChatSummary(RenameChatReqVO reqVO, Long userId);
 
     /**
-     * 删除对话
-     * @param deleteChatReqVO
-     * @return
+     * 删除对话（含归属校验）
      */
-    Response<?> deleteChat(DeleteChatReqVO deleteChatReqVO);
-
+    Response<?> deleteChat(DeleteChatReqVO reqVO, Long userId);
 }
-

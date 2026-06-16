@@ -9,18 +9,14 @@ import com.vin.ai.robot.domain.dos.ChatDO;
 public interface ChatMapper extends BaseMapper<ChatDO> {
 
     /**
-     * 分页查询
-     * @param current
-     * @param size
-     * @return
+     * 分页查询（按用户过滤）
      */
-    default Page<ChatDO> selectPageList(Long current, Long size) {
-        // 分页对象(查询第几页、每页多少数据)
+    default Page<ChatDO> selectPageList(Long current, Long size, Long userId) {
         Page<ChatDO> page = new Page<>(current, size);
 
-        // 构建查询条件
         LambdaQueryWrapper<ChatDO> wrapper = Wrappers.<ChatDO>lambdaQuery()
-                .orderByDesc(ChatDO::getUpdateTime); // 按更新时间倒序
+                .eq(ChatDO::getUserId, userId)
+                .orderByDesc(ChatDO::getUpdateTime);
 
         return selectPage(page, wrapper);
     }

@@ -1,5 +1,6 @@
 package com.vin.ai.robot.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vin.ai.robot.enums.ResponseCodeEnum;
 import com.vin.ai.robot.utils.Response;
@@ -108,6 +109,21 @@ public class GlobalExceptionHandler {
         return result;
     }
 
+
+    /**
+     * 未登录异常
+     */
+    @ExceptionHandler({ NotLoginException.class })
+    @ResponseBody
+    public Response<Object> handleNotLoginException(HttpServletRequest request, HttpServletResponse httpResponse, NotLoginException e) {
+        log.warn("{} request fail, not login", request.getRequestURI());
+        Response<Object> result = Response.fail(ResponseCodeEnum.USER_NOT_LOGIN);
+        if (isSseRequest(request)) {
+            writeSseErrorResponse(httpResponse, result);
+            return null;
+        }
+        return result;
+    }
 
     /**
      * 其他类型异常

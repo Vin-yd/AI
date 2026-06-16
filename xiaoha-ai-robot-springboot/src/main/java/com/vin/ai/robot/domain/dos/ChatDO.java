@@ -20,6 +20,7 @@ public class ChatDO {
     @TableId(type = IdType.AUTO)
     private Long id;
     private String uuid;
+    private Long userId;
     private String summary;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

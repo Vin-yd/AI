@@ -33,31 +33,25 @@ public class ChatServiceImpl implements ChatService {
     private ChatMapper chatMapper;
     @Resource
     private ChatMessageMapper chatMessageMapper;
+
     /**
      * 新建对话
-     *
-     * @param newChatReqVO
-     * @return
      */
     @Override
-    public Response<NewChatRspVO> newChat(NewChatReqVO newChatReqVO) {
-        // 用户发送的消息
+    public Response<NewChatRspVO> newChat(NewChatReqVO newChatReqVO, Long userId) {
         String message = newChatReqVO.getMessage();
 
-        // 生成对话 UUID
         String uuid = UUID.randomUUID().toString();
-        // 截取用户发送的消息，作为对话摘要
         String summary = StringUtil.truncate(message, 20);
 
-        // 存储对话记录到数据库中
         chatMapper.insert(ChatDO.builder()
                 .summary(summary)
                 .uuid(uuid)
+                .userId(userId)
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
                 .build());
 
-        // 将摘要、UUID 返回给前端
         return Response.success(NewChatRspVO.builder()
                 .uuid(uuid)
                 .summary(summary)
@@ -65,35 +59,37 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 查询历史消息
-     *
-     * @param findChatHistoryMessagePageListReqVO
-     * @return
+     * 查询历史消息（先校验对话归属）
      */
     @Override
-    public PageResponse<FindChatHistoryMessagePageListRspVO> findChatHistoryMessagePageList(FindChatHistoryMessagePageListReqVO findChatHistoryMessagePageListReqVO) {
-        // 获取当前页、以及每页需要展示的数据数量
-        Long current = findChatHistoryMessagePageListReqVO.getCurrent();
-        Long size = findChatHistoryMessagePageListReqVO.getSize();
-        String chatId = findChatHistoryMessagePageListReqVO.getChatId();
+    public PageResponse<FindChatHistoryMessagePageListRspVO> findChatHistoryMessagePageList(
+            FindChatHistoryMessagePageListReqVO reqVO, Long userId) {
+        Long current = reqVO.getCurrent();
+        Long size = reqVO.getSize();
+        String chatId = reqVO.getChatId();
 
-        // 执行分页查询
+        // 校验对话归属当前用户
+        ChatDO chat = chatMapper.selectOne(Wrappers.<ChatDO>lambdaQuery()
+                .eq(ChatDO::getUuid, chatId)
+                .eq(ChatDO::getUserId, userId));
+        if (chat == null) {
+            throw new BizException(ResponseCodeEnum.CHAT_NOT_EXISTED);
+        }
+
         Page<ChatMessageDO> chatMessageDOPage = chatMessageMapper.selectPageList(current, size, chatId);
 
         List<ChatMessageDO> chatMessageDOS = chatMessageDOPage.getRecords();
-        // DO 转 VO
         List<FindChatHistoryMessagePageListRspVO> vos = null;
         if (CollUtil.isNotEmpty(chatMessageDOS)) {
             vos = chatMessageDOS.stream()
-                    .map(chatMessageDO -> FindChatHistoryMessagePageListRspVO.builder() // 构建返参 VO 实体类
+                    .map(chatMessageDO -> FindChatHistoryMessagePageListRspVO.builder()
                             .id(chatMessageDO.getId())
                             .chatId(chatMessageDO.getChatUuid())
                             .content(chatMessageDO.getContent())
                             .role(chatMessageDO.getRole())
-                            .reasoning(chatMessageDO.getReasoningContent()) // 推理内容
+                            .reasoning(chatMessageDO.getReasoningContent())
                             .createTime(chatMessageDO.getCreateTime())
                             .build())
-                    // 升序排序
                     .sorted(Comparator.comparing(FindChatHistoryMessagePageListRspVO::getCreateTime))
                     .collect(Collectors.toList());
         }
@@ -103,27 +99,20 @@ public class ChatServiceImpl implements ChatService {
 
     /**
      * 查询历史对话
-     *
-     * @param findChatHistoryPageListReqVO
-     * @return
      */
     @Override
-    public PageResponse<FindChatHistoryPageListRspVO> findChatHistoryPageList(FindChatHistoryPageListReqVO findChatHistoryPageListReqVO) {
-        // 获取当前页、以及每页需要展示的数据数量
-        Long current = findChatHistoryPageListReqVO.getCurrent();
-        Long size = findChatHistoryPageListReqVO.getSize();
+    public PageResponse<FindChatHistoryPageListRspVO> findChatHistoryPageList(
+            FindChatHistoryPageListReqVO reqVO, Long userId) {
+        Long current = reqVO.getCurrent();
+        Long size = reqVO.getSize();
 
-        // 执行分页查询
-        Page<ChatDO> chatDOPage = chatMapper.selectPageList(current, size);
+        Page<ChatDO> chatDOPage = chatMapper.selectPageList(current, size, userId);
 
-        // 获取查询结果
         List<ChatDO> chatDOS = chatDOPage.getRecords();
-
-        // DO 转 VO
         List<FindChatHistoryPageListRspVO> vos = null;
         if (CollUtil.isNotEmpty(chatDOS)) {
             vos = chatDOS.stream()
-                    .map(chatDO -> FindChatHistoryPageListRspVO.builder() // 构建返参 VO
+                    .map(chatDO -> FindChatHistoryPageListRspVO.builder()
                             .id(chatDO.getId())
                             .uuid(chatDO.getUuid())
                             .summary(chatDO.getSummary())
@@ -136,19 +125,21 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 重命名对话摘要
-     *
-     * @param renameChatReqVO
-     * @return
+     * 重命名对话摘要（归属校验）
      */
     @Override
-    public Response<?> renameChatSummary(RenameChatReqVO renameChatReqVO) {
-        // 对话 ID
-        Long chatId = renameChatReqVO.getId();
-        // 摘要
-        String summary = renameChatReqVO.getSummary();
+    public Response<?> renameChatSummary(RenameChatReqVO reqVO, Long userId) {
+        Long chatId = reqVO.getId();
+        String summary = reqVO.getSummary();
 
-        // 根据主键 ID 更新摘要
+        // 归属校验
+        ChatDO chat = chatMapper.selectOne(Wrappers.<ChatDO>lambdaQuery()
+                .eq(ChatDO::getId, chatId)
+                .eq(ChatDO::getUserId, userId));
+        if (chat == null) {
+            throw new BizException(ResponseCodeEnum.CHAT_NOT_EXISTED);
+        }
+
         chatMapper.updateById(ChatDO.builder()
                 .id(chatId)
                 .summary(summary)
@@ -158,27 +149,23 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 删除对话
-     *
-     * @param deleteChatReqVO
-     * @return
+     * 删除对话（归属校验）
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Response<?> deleteChat(DeleteChatReqVO deleteChatReqVO) {
-        // 对话 UUID
-        String uuid = deleteChatReqVO.getUuid();
+    public Response<?> deleteChat(DeleteChatReqVO reqVO, Long userId) {
+        String uuid = reqVO.getUuid();
 
-        // 删除对话
-        int count = chatMapper.delete(Wrappers.<ChatDO>lambdaQuery()
-                .eq(ChatDO::getUuid, uuid));
-
-        // 如果删除操作影响的行数为 0，说明想要删除的对话不存在
-        if (count == 0) {
+        // 归属校验
+        ChatDO chat = chatMapper.selectOne(Wrappers.<ChatDO>lambdaQuery()
+                .eq(ChatDO::getUuid, uuid)
+                .eq(ChatDO::getUserId, userId));
+        if (chat == null) {
             throw new BizException(ResponseCodeEnum.CHAT_NOT_EXISTED);
         }
 
-        // 批量删除对话下的所有消息
+        chatMapper.deleteById(chat.getId());
+
         chatMessageMapper.delete(Wrappers.<ChatMessageDO>lambdaQuery()
                 .eq(ChatMessageDO::getChatUuid, uuid));
 
