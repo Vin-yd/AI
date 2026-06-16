@@ -22,6 +22,14 @@ public enum ResponseCodeEnum implements BaseExceptionInterface {
     MARKDOWN_FILE_CANT_DELETE("20005", "正在处理中的 Markdown 问答文件，不允许删除"),
     MERGE_CHUNK_NOT_FOUND("20006", "合并的分片文件不存在"),
     CHUNK_NUM_NOT_COMPLETE("20007", "分片数量不完整"),
+
+    // ----------- 短信/登录相关 -----------
+    SMS_TOO_FREQUENT("30001", "验证码发送过于频繁，请60秒后再试"),
+    SMS_SEND_FAILED("30002", "短信发送失败，请稍后重试"),
+    SMS_CODE_INVALID("30003", "验证码错误或已过期"),
+    USER_NOT_LOGIN("30004", "请先登录"),
+    USER_DISABLED("30005", "账号已被禁用"),
+    FORBIDDEN("30006", "无权限，仅管理员可操作"),
     ;
 
     // 异常码
