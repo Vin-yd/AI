@@ -583,9 +583,15 @@ onBeforeUnmount(() => {
 
 /* 移动端适配 */
 @media (max-width: 480px) {
-  .login-card { padding: 32px 24px; border-radius: 20px; }
+  .login-card { padding: 28px 20px; border-radius: 20px; margin: 16px; }
   .card-header h1 { font-size: 20px; }
+  .card-header p { font-size: 13px; }
   .code-row { flex-direction: column; }
-  .send-code-btn { padding: 12px; min-width: auto; text-align: center; }
+  .send-code-btn { padding: 12px; min-width: auto; text-align: center; font-size: 12px; }
+  .input-field { padding: 12px 14px; font-size: 14px; }
+  .login-btn { padding: 13px; font-size: 15px; }
+  .deco-ring.r1 { width: 320px; height: 320px; margin-left: -160px; margin-top: -160px; }
+  .deco-ring.r2 { width: 440px; height: 440px; margin-left: -220px; margin-top: -220px; }
+  .corner-deco { display: none; }
 }
 </style>

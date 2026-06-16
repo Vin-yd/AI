@@ -360,6 +360,13 @@ const toggleReasoning = (chat) => {
 
 /* 聊天内容区域样式 */
 .overflow-y-auto {
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent; /* 自定义滚动条颜色 */
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+@media (max-width: 768px) {
+  .quesiton-container {
+    font-size: 14px; line-height: 24px; padding: 10px 16px;
+    max-width: calc(100% - 16px);
+  }
 }
 </style>

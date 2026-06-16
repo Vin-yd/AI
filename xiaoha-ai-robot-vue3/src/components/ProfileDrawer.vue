@@ -2,7 +2,7 @@
   <a-drawer
     title="个人中心"
     placement="left"
-    :width="360"
+    :width="isMobile ? '100%' : 360"
     :open="open"
     @close="$emit('close')"
     :closable="true"
@@ -82,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { useUserStore } from '@/stores/userStore'
@@ -94,6 +94,11 @@ const emit = defineEmits(['close'])
 
 const router = useRouter()
 const userStore = useUserStore()
+
+const isMobile = ref(false)
+function checkMobile() { isMobile.value = window.innerWidth < 768 }
+onMounted(() => { checkMobile(); window.addEventListener('resize', checkMobile) })
+onBeforeUnmount(() => window.removeEventListener('resize', checkMobile))
 
 const avatarChar = computed(() =>
   (userStore.userInfo?.nickname || userStore.userInfo?.phone || 'U')[0].toUpperCase()

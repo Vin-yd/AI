@@ -1,8 +1,14 @@
 <template>
     <!-- 左边栏 -->
     <div
-        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-        class="w-64 bg-[#f9fbff] border-r border-gray-200 fixed left-0 top-0 h-full transition-transform duration-300 ease-in-out z-10 overflow-y-auto">
+        :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', isMobile ? 'z-30 w-72' : 'z-10 w-64']"
+        class="bg-[#f9fbff] border-r border-gray-200 fixed left-0 top-0 h-full transition-transform duration-300 ease-in-out overflow-y-auto">
+        <!-- 移动端关闭按钮 -->
+        <button v-if="isMobile && sidebarOpen"
+          @click="toggleSidebar"
+          class="absolute top-4 right-4 z-40 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
+          <span class="text-gray-500 text-lg">✕</span>
+        </button>
         <div class="p-0 h-full flex flex-col">
             <!-- Logo 与应用名称 -->
              <div class="flex items-center justify-center p-4 cursor-pointer" @click="jumpToIndexPage">
@@ -161,6 +167,7 @@ const userStore = useUserStore()
 
 const props = defineProps({
   sidebarOpen: { type: Boolean, required: true },
+  isMobile: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['toggle-sidebar'])

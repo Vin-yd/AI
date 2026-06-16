@@ -849,13 +849,18 @@ const alertType = computed(() => {
   position: relative;
 }
 
-/* 聊天内容区域样式 */
 .overflow-y-auto {
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-  /* 自定义滚动条颜色 */
 }
-/* 解决按钮中图标没有垂直居中问题 */
+
 :where(.css-dev-only-do-not-override-1p3hq3p).ant-btn >span {
     display: inline-flex;
+}
+
+@media (max-width: 768px) {
+  .quesiton-container {
+    font-size: 14px; line-height: 24px; padding: 10px 16px;
+    max-width: calc(100% - 24px);
+  }
 }
 </style>
